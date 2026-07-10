@@ -1,0 +1,548 @@
+/* --- СОВРЕМЕННЫЕ SaaS ПЕРЕМЕННЫЕ --- */
+:root {
+    --bg-app: #f4f6f9;
+    --bg-card: #ffffff;
+    --bg-widget: #f8fafc;
+    --border-element: #e2e8f0;
+    
+    --text-primary: #1e293b;
+    --text-muted: #64748b;
+    
+    /* Цвета бренда */
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #059669;
+    --success-card: #f0fdf4;
+    --success-border: #bbf7d0;
+    --danger: #dc2626;
+    --danger-bg: rgba(220, 38, 38, 0.08);
+    --accent: #d97706;
+    
+    /* Инженерная палитра для 2D-чертежей */
+    --canvas-bg: #1e2530; /* Графитовый фон как в AutoCAD */
+    --canvas-grid: rgba(255, 255, 255, 0.05);
+    --opening-bg: rgba(239, 68, 68, 0.25);
+    --opening-border: #f87171;
+    
+    --shadow-card: 0 10px 25px -5px rgba(30, 41, 59, 0.05), 0 4px 12px -5px rgba(30, 41, 59, 0.03);
+    --radius-standard: 12px;
+    --radius-controls: 6px;
+}
+
+/* --- ОБЩИЕ СТИЛИ СТРАНИЦЫ --- */
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
+    background-color: var(--bg-app); 
+    color: var(--text-primary);
+    padding: 50px 20px;
+    margin: 0;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.box { 
+    max-width: 1040px; 
+    margin: 0 auto; 
+    background: var(--bg-card); 
+    padding: 45px; 
+    border-radius: var(--radius-standard); 
+    box-shadow: var(--shadow-card); 
+}
+
+h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.75px;
+    margin: 0 0 35px 0;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border-element);
+}
+
+h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    letter-spacing: -0.25px;
+}
+
+h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 30px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Сетка и элементы форм */
+.row { 
+    display: flex; 
+    gap: 16px; 
+    margin-bottom: 16px; 
+    flex-wrap: wrap; 
+}
+
+.item { 
+    display: flex; 
+    flex-direction: column; 
+    flex: 1; 
+    min-width: 150px; 
+}
+
+label { 
+    font-size: 11px; 
+    font-weight: 700; 
+    margin-bottom: 8px; 
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input, select { 
+    padding: 11px 14px; 
+    border: 1px solid var(--border-element); 
+    border-radius: var(--radius-controls); 
+    background-color: var(--bg-widget);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.15s ease-in-out;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: var(--bg-card);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* Кнопки управления */
+button { 
+    padding: 12px 24px; 
+    border: none; 
+    border-radius: var(--radius-controls); 
+    cursor: pointer; 
+    font-weight: 600; 
+    font-size: 14px;
+    transition: all 0.15s ease;
+}
+
+button:active { transform: scale(0.98); }
+.btn-blue { background: var(--primary); color: white; }
+.btn-blue:hover { background: var(--primary-hover); }
+
+.btn-green { 
+    background: var(--success); 
+    color: white; 
+    width: 100%; 
+    font-size: 16px; 
+    padding: 18px; 
+    margin-top: 35px; 
+    border-radius: var(--radius-standard);
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.2);
+}
+.btn-green:hover { background: #047857; box-shadow: 0 6px 20px rgba(5, 150, 105, 0.3); }
+
+.btn-red { background: var(--danger-bg); color: var(--danger); padding: 8px 14px; }
+.btn-red:hover { background: var(--danger); color: white; }
+
+.pdf-header { display: flex; justify-content: flex-end; margin-bottom: 25px; }
+.btn-pdf { background: #0f172a; color: white; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15); }
+.btn-pdf:hover { background: #1e293b; }
+
+/* Карточка стены */
+.wall { 
+    background: var(--bg-card); 
+    border: 1px solid var(--border-element); 
+    padding: 28px; 
+    border-radius: var(--radius-standard); 
+    margin-top: 24px; 
+    box-shadow: var(--shadow-sm);
+}
+.wall-head { display: flex; justify-content: space-between; margin-bottom: 22px; align-items: center; }
+.wall-title { font-weight: 700; font-size: 18px; }
+.openings-section { margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--border-element); }
+
+.opening-item.row {
+    margin-top: 12px; 
+    background: var(--bg-widget); 
+    padding: 18px; 
+    border-radius: var(--radius-controls); 
+    border: 1px solid var(--border-element);
+    align-items: flex-end;
+}
+
+/* Блок результатов */
+.res { 
+    display: none; 
+    background: var(--bg-card); 
+    border: 1px solid var(--border-element); 
+    padding: 35px; 
+    border-radius: var(--radius-standard); 
+    margin-top: 40px; 
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+}
+
+.res-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+    gap: 20px; 
+    margin-bottom: 35px;
+}
+
+.res-box { 
+    background: var(--success-card); 
+    padding: 24px; 
+    border-radius: var(--radius-standard); 
+    text-align: center; 
+    font-weight: 600; 
+    font-size: 12px;
+    color: #065f46;
+    border: 1px solid var(--success-border);
+}
+
+.res-box span { 
+    display: block; 
+    color: var(--success); 
+    font-size: 28px; 
+    font-weight: 800;
+    margin-top: 6px;
+    letter-spacing: -1px;
+}
+
+.res-box:last-child { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+.res-box:last-child span { color: var(--accent); }
+
+/* --- 2D ЧЕРТЕЖИ СТЕН (ИНЖЕНЕРНЫЙ ЦВЕТ) --- */
+.wall-visual-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border-element);
+    padding: 24px;
+    border-radius: var(--radius-standard);
+    margin-bottom: 28px;
+}
+
+.wall-visual-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+
+.wall-canvas-container {
+    position: relative;
+    width: 100%;
+    background-color: var(--canvas-bg);
+    background-image: linear-gradient(var(--canvas-grid) 1px, transparent 1px), linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
+    background-size: 20px 20px;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid #0f172a;
+}
+
+.wall-canvas-crown {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.wall-canvas-part {
+    position: absolute;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    box-sizing: border-box;
+    border-right: 1px solid rgba(0,0,0,0.2);
+    border-left: 1px solid rgba(255,255,255,0.1);
+    box-shadow: inset 0 8px 8px -4px rgba(255,255,255,0.15), inset 0 -8px 8px -4px rgba(0,0,0,0.2);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.wall-canvas-opening {
+    position: absolute;
+    background: var(--opening-bg);
+    border: 2px dashed var(--opening-border);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fca5a5;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    z-index: 2;
+}
+
+.wall-canvas-cup-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-left: 2px dotted rgba(255, 255, 255, 0.35);
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* --- СХЕМА КАРТЫ ЛИНЕЙНОГО РАСКРОЯ --- */
+.map-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    background: var(--bg-widget);
+    border: 1px solid var(--border-element);
+    padding: 14px;
+    border-radius: var(--radius-controls);
+}
+
+.map-index { width: 55px; font-weight: 700; font-size: 13px; color: var(--text-muted); }
+
+.map-visual-bar {
+    flex: 1;
+    height: 38px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #cbd5e1;
+}
+
+.map-part {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-right: 1px solid rgba(0,0,0,0.15);
+    box-shadow: inset 0 8px 8px -4px rgba(255,255,255,0.15);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.map-trim { background: #64748b; height: 100%; opacity: 0.6; }
+.map-waste {
+    background: #cbd5e1;
+    height: 100%;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-spec-text {
+    width: 300px;
+    padding-left: 24px;
+    font-size: 12px;
+    font-family: monospace;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- 🖨️ НАСТРОЙКИ СТРОГОГО СТИЛЯ ПЕЧАТИ PDF --- */
+@media print {
+    @page {
+        size: A4 landscape; /* Длинные чертежи стен идеальны в альбоме */
+        margin: 15mm 12mm 15mm 12mm;
+    }
+    
+    body { background: #ffffff; padding: 0; color: #000000; }
+    .box { box-shadow: none; padding: 0; max-width: 100%; }
+    h1, h2, #add-w-btn, .wall, .btn-green, .pdf-header, .openings-section, .row { display: none !important; }
+    .res { display: block !important; border: none; padding: 0; margin: 0; }
+    
+    .pdf-only-title { 
+        display: block !important; 
+        font-size: 22px;
+        font-weight: 800;
+        border-bottom: 2px solid #000000;
+        padding-bottom: 8px;
+        margin-bottom: 25px;
+        text-transform: uppercase;
+    }
+
+    /* Инвертируем AutoCAD-подложку в светлый эконом-режим для принтеров */
+    .wall-canvas-container {
+        background-color: #f8fafc !important;
+        background-image: none !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .wall-canvas-part {
+        color: #000000 !important;
+        border-right: 1px solid #000000 !important;
+        border-left: none !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        background-color: transparent !important; /* Убираем заливку, экономим тонер */
+        border-bottom: 1px solid #000000 !important;
+    }
+    
+    .wall-canvas-opening {
+      background: rgba(0, 0, 0, 0.05) !important;
+      border: 2px dashed #000000 !important;
+      color: #000000 !important;
+  }
+  
+  .wall-canvas-cup-line { 
+    border-left: 1.5px dashed #000000 !important; 
+  }
+  
+  /*Печатная адаптация карт линейной раскладки */
+  .map-row {box-shadow: none !important;
+  border: 1px solid #000000 !important;
+  background: #ffffff !important;
+  padding: 8px !important;
+  page-break-inside: avoid; 
+  /* Запрещает разрывать полосу бруса между страницами */
+}
+
+.map-visual-bar { 
+  border: 1px solid #000000 !important; 
+  background: #ffffff !important; 
+  }
+  
+  .map-part { 
+    color: #000000 !important; 
+    text-shadow: none !important; 
+    box-shadow: none !important; 
+    border-right: 1px solid #000000 !important; 
+  }
+  
+  .map-trim { 
+    background: #cbd5e1 !important; 
+    border-right: 1px solid #000000 !important; 
+  }
+  
+  .map-waste { 
+    background: #f1f5f9 !important; 
+    color: #000000 !important; 
+  }
+  
+  .map-spec-text { 
+    color: #000000 !important; 
+  }
+  
+  .res-box { 
+    border: 1px solid #000000 !important; 
+    background: transparent !important; 
+    color: #000000 !important; 
+  }
+  
+  .res-box span { 
+    color: #000000 !important; 
+  }
+  
+  .wall-visual-block { 
+    border: none !important; 
+    padding: 0 !important; 
+    margin-bottom: 30px !important; 
+    page-break-inside: avoid; 
+  }}
+
+---
+
+### 🧱 Блок 2: Структурная разметка документа (`index.html`)
+*В разметку добавлены скрытые технические узлы, которые активируются только в печатной версии отчета.*
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инженерный калькулятор раскроя бруса и порядовки</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="box">
+    <h1>Производственный калькулятор стенового комплекта</h1>
+    
+    <h2>Параметры бруса и производства</h2>
+    <div class="row">
+        <div class="item"><label>Ширина бруса (мм)</label><input type="number" id="b-w" value="200"></div>
+        <div class="item"><label>Рабочая высота венца (мм)</label><input type="number" id="b-h" value="180"></div>
+        <div class="item"><label>Длина заготовки (м)</label><input type="number" id="s-l" value="6.00" step="0.01"></div>
+        <div class="item"><label>Припуск на торцовку (мм)</label><input type="number" id="trim" value="50"></div>
+    </div>
+
+    <h2>Параметры стен, перерубов и выпусков</h2>
+    <div id="w-container"></div>
+    <button type="button" class="btn-blue" id="add-w-btn">+ Добавить стену</button>
+
+    <button type="button" class="btn-green" id="calc-btn">Сгенерировать порядовку и карту раскроя</button>
+
+    <!-- Сводные результаты -->
+    <div class="res" id="r-block">
+        <div class="pdf-header">
+            <button type="button" class="btn-pdf" id="pdf-btn">📥 Сформировать и скачать PDF</button>
+        </div>
+        
+        <div id="pdf-content">
+            <!-- Элемент активируется исключительно при экспорте в PDF -->
+            <h2 class="pdf-only-title" style="display: none; margin-top: 0; color: #0f172a;">Спецификация и карта линейного раскроя бруса</h2>
+            
+            <h3>Сводные показатели заказа:</h3>
+            <div class="res-grid">
+                <div class="res-box">Чистый объем деталей<span id="r-v-net">0.00</span> м³</div>
+                <div class="res-box">Объем заготовок<span id="r-v-gross">0.00</span> м³</div>
+                <div class="res-box">Количество заготовок<span id="r-pcs">0</span> шт.</div>
+                <div class="res-box">Общий процент отходов<span id="r-waste">0.0</span> %</div>
+            </div>
+
+            <h3>2D-Чертежи развертки стен и расположения проемов (с осями чаш):</h3>
+            <div id="walls-preview-container" style="margin-bottom: 30px;"></div>
+
+            <h3>Чертеж и карта линейного раскроя заготовок:</h3>
+            <div id="cutting-map-container"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Шаблон стены -->
+<div id="wall-template" style="display: none;">
+    <div class="wall">
+        <div class="wall-head">
+            <span class="wall-title">Стена</span>
+            <button type="button" class="btn-red del-w-btn">Удалить стену</button>
+        </div>
+        
+        <div class="row">
+            <div class="item" style="flex: 2;"><label>Чистая длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
+            <div class="item"><label>Выпуск слева (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
+            <div class="item"><label>Выпуск справа (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
+            <div class="item"><label>Кол-во венцов</label><input type="number" class="w-crowns" value="16"></div>
+        </div>
+
+        <div class="row" style="margin-top: 10px;">
+            <div class="item" style="flex: 1;"><label>Пересечения / Оси смежных стен (метры от угла через запятую)</label><input type="text" class="w-intersections" value="4.00"></div>
+        </div>
+
+        <div class="openings-section">
+            <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (Окна / Двери):</h4>
+            <div class="openings-list"></div>
+            <button type="button" class="btn-blue add-op-btn" style="background:#5c6bc0; font-size:12px; margin-top:5px;">+ Добавить проем</button>
+        </div>
+    </div>
+</div>
+
+<!-- Шаблон строки проема -->
+<div id="opening-template" style="display: none;">
+    <div class="opening-item row" style="margin-top:5px; background:#f0f2f1; padding:8px; border-radius:4px; gap: 10px;">
+        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно"></div>
+        <div class="item"><label>От левого угла (м)</label><input type="number" class="op-start" value="2.00" step="0.01"></div>
+        <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
+        <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
+        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
+        <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
