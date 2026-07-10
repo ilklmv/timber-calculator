@@ -39,6 +39,7 @@ function addOpening(container) {
     container.appendChild(newOpening);
 }
 
+// ИСПРАВЛЕНО: Корректное переключение видимости отдельного блока фронтона
 function toggleGableFields(selectElement) {
     const wallNode = selectElement.closest('.wall');
     const gableFields = wallNode.querySelector('.gable-fields');
@@ -73,7 +74,7 @@ function calculateCutting() {
         const wType = wallNode.querySelector('.w-type').value;
         const wLenClean = parseFloat(wallNode.querySelector('.w-len').value);
         
-        // Прямоугольная база + фронтонная надстройка
+        // Четкое разделение: прямоугольная стена + надстраиваемый блок фронтона
         const wCrownsNormal = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
         const wCrownsGable = (wType !== 'normal') ? (parseInt(wallNode.querySelector('.w-gable-crowns').value) || 0) : 0;
         const wCrownsTotal = wCrownsNormal + wCrownsGable;
@@ -156,7 +157,6 @@ function calculateCutting() {
             }
         });
 
-        // Единый порядовый цикл по всей конструкции трапеции/двускатной стены
         for (let crown = 1; crown <= wCrownsTotal; crown++) {
             const crownDiv = document.createElement('div');
             crownDiv.className = 'wall-canvas-crown';
@@ -171,25 +171,22 @@ function calculateCutting() {
             if (crown > wCrownsNormal && wType !== 'normal') {
                 const heightInsideGable = (crown - wCrownsNormal - 0.5) * bH;
                 
-                // Расчет отступа ската на основе угла кровли (или ограничителя по высоте)
                 let lateralCutback = heightInsideGable * Math.tan((90 - roofAngleDeg) * Math.PI / 180);
                 if (maxGableH > 0 && heightInsideGable > maxGableH) {
-                    lateralCutback = wLenTotal; // Полная отсечка
+                    lateralCutback = wLenTotal; 
                 }
 
                 if (wType === 'gable') {
-                    // Симметричный двускатный срез брусьев с двух сторон к центру
                     currentLineLeftBound = Math.min(wLenTotal / 2, lateralCutback);
                     currentLineRightBound = Math.max(wLenTotal / 2, wLenTotal - lateralCutback);
                 } else if (wType === 'shed') {
-                    // Односкатная трапеция — усечение идет только с правого края
                     currentLineLeftBound = 0;
                     currentLineRightBound = Math.max(0, wLenTotal - lateralCutback);
                 }
             }
 
             const activeRowLength = currentLineRightBound - currentLineLeftBound;
-            if (activeRowLength <= 0.05) continue; // Конек сформирован полностью
+            if (activeRowLength <= 0.05) continue; 
 
             let validCupsInRow = absoluteCups.filter(cup => cup >= currentLineLeftBound && cup <= currentLineRightBound);
             if (!validCupsInRow.includes(currentLineLeftBound)) validCupsInRow.unshift(currentLineLeftBound);
@@ -259,8 +256,7 @@ function calculateCutting() {
     });
     ---
 
-### 🪵 Блок 4: `script.js` — Часть 3 из 3
-*Алгоритм FFD-раскроя по заготовкам бруса и вывод графики отчета.*
+### 🪵 Часть 3: Группировка раскроя и вывод отчетов
 
 ```javascript
     if (!validWallFound || flatParts.length === 0) {
