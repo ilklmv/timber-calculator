@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инженерный калькулятор раскроя бруса и порядовки</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="box">
+    <h1>Автоматический расчет порядовки, чаш и раскроя бруса</h1>
+    
+    <h2>Параметры бруса и производства</h2>
+    <div class="row">
+        <div class="item"><label>Ширина бруса (мм)</label><input type="number" id="b-w" value="200"></div>
+        <div class="item"><label>Рабочая высота венца (мм)</label><input type="number" id="b-h" value="180"></div>
+        <div class="item"><label>Длина заготовки (м)</label><input type="number" id="s-l" value="6.00" step="0.01"></div>
+        <div class="item"><label>Припуск на торцовку (мм)</label><input type="number" id="trim" value="50"></div>
+    </div>
+
+    <h2>Параметры стен, перерубов и выпусков</h2>
+    <div id="w-container"></div>
+    <button type="button" class="btn-blue" id="add-w-btn">+ Добавить стену</button>
+
+    <button type="button" class="btn-green" id="calc-btn">Сгенерировать порядовку и карту раскроя</button>
+
+    <!-- Сводные результаты -->
+    <div class="res" id="r-block">
+        <div class="pdf-header">
+            <button type="button" class="btn-pdf" id="pdf-btn">📥 Скачать отчет в PDF</button>
+        </div>
+        
+        <div id="pdf-content">
+            <h2 class="pdf-only-title" style="display: none; margin-top: 0; color: #2c3e50;">Спецификация стенового комплекта и раскрой</h2>
+            
+            <h3>Сводные показатели заказа:</h3>
+            <div class="res-grid">
+                <div class="res-box">Чистый объем деталей<span id="r-v-net">0.00</span> м³</div>
+                <div class="res-box">Объем заготовок<span id="r-v-gross">0.00</span> м³</div>
+                <div class="res-box">Количество заготовок<span id="r-pcs">0</span> шт.</div>
+                <div class="res-box">Общий процент отходов<span id="r-waste">0.0</span> %</div>
+            </div>
+
+            <h3>2D-Чертежи развертки стен и расположения проемов (с осями чаш):</h3>
+            <div id="walls-preview-container" style="margin-bottom: 30px;"></div>
+
+            <h3>Чертеж и карта линейного раскроя заготовок:</h3>
+            <div id="cutting-map-container"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Шаблон стены -->
+<div id="wall-template" style="display: none;">
+    <div class="wall">
+        <div class="wall-head">
+            <span class="wall-title">Стена</span>
+            <button type="button" class="btn-red del-w-btn">Удалить стену</button>
+        </div>
+        
+        <div class="row">
+            <div class="item" style="flex: 2;"><label>Чистая длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
+            <div class="item"><label>Выпуск слева (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
+            <div class="item"><label>Выпуск справа (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
+            <div class="item"><label>Кол-во венцов</label><input type="number" class="w-crowns" value="16"></div>
+        </div>
+
+        <div class="row" style="margin-top: 10px;">
+            <div class="item" style="flex: 1;"><label>Пересечения / Оси смежных стен (метры от угла через запятую, например: 3.5, 6.0)</label><input type="text" class="w-intersections" value="4.00"></div>
+        </div>
+
+        <div class="openings-section">
+            <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (Окна / Двери):</h4>
+            <div class="openings-list"></div>
+            <button type="button" class="btn-blue add-op-btn" style="background:#5c6bc0; font-size:12px; margin-top:5px;">+ Добавить проем</button>
+        </div>
+    </div>
+</div>
+
+<!-- Шаблон строки проема -->
+<div id="opening-template" style="display: none;">
+    <div class="opening-item row" style="margin-top:5px; background:#f0f2f1; padding:8px; border-radius:4px; gap: 10px;">
+        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно"></div>
+        <div class="item"><label>От левого угла (м)</label><input type="number" class="op-start" value="2.00" step="0.01"></div>
+        <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
+        <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
+        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
+        <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
