@@ -24,9 +24,26 @@ function addWall() {
     newWall.querySelector('.del-w-btn').onclick = function() {
         newWall.remove();
     };
+
     newWall.querySelector('.add-op-btn').onclick = function() {
         addOpening(openingsList);
     };
+
+    const addGableBtn = newWall.querySelector('.add-gable-trigger-btn');
+    const gableBlock = newWall.querySelector('.gable-fields-block');
+    
+    addGableBtn.onclick = function() {
+        gableBlock.style.display = 'block';
+        addGableBtn.style.display = 'none';
+        gableBlock.dataset.hasGable = "true";
+    };
+
+    newWall.querySelector('.del-gable-btn').onclick = function() {
+        gableBlock.style.display = 'none';
+        addGableBtn.style.display = 'inline-flex';
+        gableBlock.dataset.hasGable = "false";
+    };
+
     wContainer.appendChild(newWall);
     addOpening(openingsList);
 }
@@ -37,17 +54,6 @@ function addOpening(container) {
         newOpening.remove();
     };
     container.appendChild(newOpening);
-}
-
-// ИСПРАВЛЕНО: Корректное переключение видимости отдельного блока фронтона
-function toggleGableFields(selectElement) {
-    const wallNode = selectElement.closest('.wall');
-    const gableFields = wallNode.querySelector('.gable-fields');
-    if (selectElement.value === 'gable' || selectElement.value === 'shed') {
-        gableFields.style.display = 'flex';
-    } else {
-        gableFields.style.display = 'none';
-    }
 }
 function calculateCutting() {
     const bW = parseFloat(document.getElementById('b-w').value) / 1000;
@@ -71,19 +77,21 @@ function calculateCutting() {
     activeWalls.forEach((wallNode, wIdx) => {
         validWallFound = true;
         const wLabel = `Ст.${wIdx + 1}`;
-        const wType = wallNode.querySelector('.w-type').value;
         const wLenClean = parseFloat(wallNode.querySelector('.w-len').value);
-        
-        // Четкое разделение: прямоугольная стена + надстраиваемый блок фронтона
         const wCrownsNormal = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
-        const wCrownsGable = (wType !== 'normal') ? (parseInt(wallNode.querySelector('.w-gable-crowns').value) || 0) : 0;
+        
+        const gableBlock = wallNode.querySelector('.gable-fields-block');
+        const hasGable = gableBlock.dataset.hasGable === "true";
+
+        const wType = hasGable ? gableBlock.querySelector('.w-roof-type').value : 'normal';
+        const wCrownsGable = hasGable ? (parseInt(gableBlock.querySelector('.w-gable-crowns').value) || 0) : 0;
         const wCrownsTotal = wCrownsNormal + wCrownsGable;
 
         const leftOverhang = (parseFloat(wallNode.querySelector('.w-left-overhang').value) || 0) / 1000;
         const rightOverhang = (parseFloat(wallNode.querySelector('.w-right-overhang').value) || 0) / 1000;
         
-        const roofAngleDeg = parseFloat(wallNode.querySelector('.w-roof-angle').value) || 0;
-        const maxGableH = parseFloat(wallNode.querySelector('.w-gable-h').value) || 0;
+        const roofAngleDeg = hasGable ? (parseFloat(gableBlock.querySelector('.w-roof-angle').value) || 0) : 0;
+        const maxGableH = hasGable ? (parseFloat(gableBlock.querySelector('.w-gable-h').value) || 0) : 0;
 
         const intersectionsInput = wallNode.querySelector('.w-intersections').value;
         let intersections = intersectionsInput.split(',')
@@ -105,7 +113,7 @@ function calculateCutting() {
         
         const visualTitle = document.createElement('div');
         visualTitle.className = 'wall-visual-title';
-        visualTitle.innerText = `Развертка стены №${wIdx + 1} (Всего венцов: ${wCrownsTotal}, Полная длина: ${wLenTotal.toFixed(2)}м)`;
+        visualTitle.innerText = `Развертка стены №${wIdx + 1} (База: ${wCrownsNormal}в. ${hasGable ? '+ Фронтон: ' + wCrownsGable + 'в.' : ''})`;
         visualBlock.appendChild(visualTitle);
 
         const canvas = document.createElement('div');
@@ -167,10 +175,8 @@ function calculateCutting() {
             let currentLineLeftBound = 0;
             let currentLineRightBound = wLenTotal;
 
-            // Если зашли в зону фронтона (выше прямоугольной базы) — вычисляем подрезку ската
             if (crown > wCrownsNormal && wType !== 'normal') {
                 const heightInsideGable = (crown - wCrownsNormal - 0.5) * bH;
-                
                 let lateralCutback = heightInsideGable * Math.tan((90 - roofAngleDeg) * Math.PI / 180);
                 if (maxGableH > 0 && heightInsideGable > maxGableH) {
                     lateralCutback = wLenTotal; 
@@ -248,6 +254,7 @@ function calculateCutting() {
                         currentX = Math.max(currentX, Math.min(op.end, segment.end));
                     }
                 });
+                
                 if (segment.end > currentX) {
                     registerAndRenderPart(currentX, segment.end);
                 }
@@ -256,19 +263,13 @@ function calculateCutting() {
     });
     ---
 
-### 🪵 Часть 3: Группировка раскроя и вывод отчетов
+### 🪵 Блок 3: Оптимизация раскроя по заготовкам (FFD) и вывод графики
+*(Вставьте этот финальный блок в самый конец файла `script.js` сразу после второго блока)*
 
 ```javascript
     if (!validWallFound || flatParts.length === 0) {
         alert('Добавьте хотя бы одну стену с корректными размерами!');
         return;
-    }
-
-    for (let p of flatParts) {
-        if (p.length > usableStockLength) {
-            alert(`Ошибка спецификации! Деталь "${p.mark}" получилась длиной ${p.length} м, что превышает чистую длину заготовки бруса (${usableStockLength.toFixed(2)} м после торцовки).\n\nУвеличьте длину заготовки бруса или измените положение проемов.`);
-            return;
-        }
     }
 
     flatParts.sort((a, b) => b.length - a.length);
@@ -285,16 +286,12 @@ function calculateCutting() {
             }
         }
         if (!placed) {
-            boards.push({
-                remaining: usableStockLength - part.length,
-                parts: [part]
-            });
+            boards.push({ remaining: usableStockLength - part.length, parts: [part] });
         }
     });
 
     const sectionArea = bW * bH; 
     let totalNetLength = flatParts.reduce((sum, p) => sum + p.length, 0);
-    
     const totalNetVolume = totalNetLength * sectionArea;
     const totalGrossVolume = boards.length * stockLength * sectionArea;
     const wastePercent = totalGrossVolume > 0 ? ((totalGrossVolume - totalNetVolume) / totalGrossVolume) * 100 : 0;
@@ -335,7 +332,6 @@ function calculateCutting() {
             partDiv.style.width = `${partPct}%`;
             partDiv.style.backgroundColor = part.color;
             partDiv.innerText = part.mark;
-            partDiv.title = `${part.mark}: ${part.length} м`;
             bar.appendChild(partDiv);
             specLabels.push(`${part.mark}(${part.length.toFixed(2)}м)`);
         });
@@ -363,3 +359,4 @@ function calculateCutting() {
 
     document.getElementById('r-block').style.display = 'block';
 }
+
