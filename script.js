@@ -1,84 +1,84 @@
-let wCount = 1; // Стартуем с 1, так как первая стена уже создана в HTML
+let wCount = 1;
 const wContainer = document.getElementById('w-container');
 const colors = ['#2ecc71', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#e74c3c', '#f1c40f', '#16a085', '#27ae60', '#2980b9'];
 
+// Инициализация при загрузке страницы
 document.getElementById('add-w-btn').addEventListener('click', addWall);
 document.getElementById('calc-btn').addEventListener('click', calculateCutting);
 document.getElementById('pdf-btn').addEventListener('click', () => window.print());
 
-// Инициализируем обработчики для самой первой стены, которая уже есть в HTML
-setupWallEvents(document.getElementById('wall-id-1'));
-
-function setupWallEvents(wallNode) {
-    const openingsList = wallNode.querySelector('.openings-list');
-    
-    wallNode.querySelector('.del-w-btn').onclick = function() {
-        wallNode.remove();
-    };
-
-    wallNode.querySelector('.add-op-btn').onclick = function() {
-        addOpening(openingsList);
-    };
-
-    const addGableBtn = wallNode.querySelector('.add-gable-trigger-btn');
-    const gableBlock = wallNode.querySelector('.gable-fields-block');
-    
-    addGableBtn.onclick = function() {
-        gableBlock.style.display = 'block';
-        addGableBtn.style.display = 'none';
-        gableBlock.dataset.hasGable = "true";
-    };
-
-    wallNode.querySelector('.del-gable-btn').onclick = function() {
-        gableBlock.style.display = 'none';
-        addGableBtn.style.display = 'inline-flex';
-        gableBlock.dataset.hasGable = "false";
-    };
-
-    // Вешаем удаление на дефолтное окно первой стены
-    const defaultDelOpBtn = wallNode.querySelector('.del-op-btn');
-    if (defaultDelOpBtn) {
-        defaultDelOpBtn.onclick = function() {
-            this.closest('.opening-item').remove();
-        };
+// Навешиваем глобальный перехватчик кликов (Делегирование событий)
+wContainer.addEventListener('click', function(e) {
+    // 1. Логика кнопки "+ Надстроить фронтон"
+    if (e.target && e.target.classList.contains('add-gable-trigger-btn')) {
+        const wallNode = e.target.closest('.wall');
+        const gableBlock = wallNode.querySelector('.gable-fields-block');
+        if (gableBlock) {
+            gableBlock.style.display = 'block';
+            e.target.style.display = 'none';
+        }
     }
-}
+    
+    // 2. Логика кнопки "Удалить фронтон"
+    if (e.target && e.target.classList.contains('del-gable-btn')) {
+        const wallNode = e.target.closest('.wall');
+        const gableBlock = wallNode.querySelector('.gable-fields-block');
+        const addGableBtn = wallNode.querySelector('.add-gable-trigger-btn');
+        if (gableBlock && addGableBtn) {
+            gableBlock.style.display = 'none';
+            addGableBtn.style.display = 'inline-flex';
+        }
+    }
+
+    // 3. Логика кнопки "Удалить стену"
+    if (e.target && e.target.classList.contains('del-w-btn')) {
+        const wallNode = e.target.closest('.wall');
+        if (wallNode) wallNode.remove();
+    }
+
+    // 4. Логика кнопки "+ Добавить проем"
+    if (e.target && e.target.classList.contains('add-op-btn')) {
+        const wallNode = e.target.closest('.wall');
+        const openingsList = wallNode.querySelector('.openings-list');
+        if (openingsList) addOpening(openingsList);
+    }
+
+    // 5. Логика кнопки удаления отдельного проема (крестик)
+    if (e.target && e.target.classList.contains('del-op-btn')) {
+        const item = e.target.closest('.opening-item');
+        if (item) item.remove();
+    }
+});
 
 function addWall() {
     wCount++;
-    // Клонируем первую стену как эталонную структуру
-    const sampleWall = document.getElementById('wall-id-1') || document.querySelector('.wall');
+    const sampleWall = document.querySelector('.wall');
     if (!sampleWall) return;
 
     const newWall = sampleWall.cloneNode(true);
-    newWall.id = 'wall-id-' + wCount;
+    
+    // Сбрасываем уникальное состояние для новой стены
     newWall.querySelector('.wall-title').innerText = 'Стена №' + wCount;
     
-    // Сбрасываем блок фронтона в исходное скрытое состояние
     const addGableBtn = newWall.querySelector('.add-gable-trigger-btn');
     const gableBlock = newWall.querySelector('.gable-fields-block');
-    addGableBtn.style.display = 'inline-flex';
-    gableBlock.style.display = 'none';
-    gableBlock.dataset.hasGable = "false";
+    if (addGableBtn && gableBlock) {
+        addGableBtn.style.display = 'inline-flex';
+        gableBlock.style.display = 'none';
+    }
 
-    // Очищаем список окон и оставляем только одно дефолтное
     const openingsList = newWall.querySelector('.openings-list');
-    openingsList.innerHTML = '';
+    if (openingsList) {
+        openingsList.innerHTML = '';
+        addOpening(openingsList);
+    }
     
     wContainer.appendChild(newWall);
-    setupWallEvents(newWall);
-    addOpening(openingsList);
 }
 
 function addOpening(container) {
-    // Создаем строку проема динамически, чтобы не зависеть от шаблонов
     const div = document.createElement('div');
     div.className = 'opening-item row';
-    div.style.marginTop = '5px';
-    div.style.background = '#f0f2f1';
-    div.style.padding = '8px';
-    div.style.borderRadius = '4px';
-    div.style.gap = '10px';
     div.innerHTML = `
         <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно"></div>
         <div class="item"><label>От угла (м)</label><input type="number" class="op-start" value="2.00" step="0.01"></div>
@@ -87,9 +87,6 @@ function addOpening(container) {
         <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
         <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
     `;
-    div.querySelector('.del-op-btn').onclick = function() {
-        div.remove();
-    };
     container.appendChild(div);
 }
 function calculateCutting() {
@@ -150,7 +147,7 @@ function calculateCutting() {
         
         const visualTitle = document.createElement('div');
         visualTitle.className = 'wall-visual-title';
-        visualTitle.innerText = `Развертка стены №${wIdx + 1} (Прямоугольная база: ${wCrownsNormal}в. ${hasGable ? '+ Фронтон: ' + wCrownsGable + 'в.' : ''})`;
+        visualTitle.innerText = `Развертка стены №${wIdx + 1} (База: ${wCrownsNormal}в. ${hasGable ? '+ Фронтон: ' + wCrownsGable + 'в.' : ''})`;
         visualBlock.appendChild(visualTitle);
 
         const canvas = document.createElement('div');
@@ -289,8 +286,9 @@ function calculateCutting() {
                     }
                     if (op.end > currentX && op.start < segment.end) {
                         currentX = Math.max(currentX, Math.min(op.end, segment.end));
-                        }
+                    }
                 });
+                
                 if (segment.end > currentX) {
                     registerAndRenderPart(currentX, segment.end);
                 }
@@ -299,10 +297,15 @@ function calculateCutting() {
     });
     ---
 
-### 🪵 Блок 5: `script.js` — Часть 3 из 3 (Линейная укладка бруса и отчеты)
-*(Вставьте этот финальный блок в самый конец вашего файла `script.js` сразу после кода второй части)*
+### 🪵 Часть 3 из 3: Оптимизация линейного раскроя (FFD) и вывод чертежей бруса
+*(Вставьте этот финальный блок в самый конец файла `script.js` сразу после кода второй части)*
 
 ```javascript
+    if (!validWallFound || flatParts.length === 0) {
+        alert('Добавьте хотя бы одну стену с корректными размерами!');
+        return;
+    }
+
     flatParts.sort((a, b) => b.length - a.length);
     let boards = []; 
 
