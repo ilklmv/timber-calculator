@@ -72,11 +72,11 @@ function addOpening(container) {
     const div = document.createElement('div');
     div.className = 'opening-item row';
     div.innerHTML = `
-        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно"></div>
-        <div class="item"><label>От угла (м)</label><input type="number" class="op-start" value="2.00" step="0.01"></div>
+        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно фронтона"></div>
+        <div class="item"><label>От угла (м)</label><input type="number" class="op-start" value="3.25" step="0.01"></div>
         <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
-        <div class="item"><label>От низа (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
-        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
+        <div class="item"><label>От низа (м)</label><input type="number" class="op-bottom" value="3.20" step="0.01"></div>
+        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.00" step="0.01"></div>
         <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
     `;
     container.appendChild(div);
