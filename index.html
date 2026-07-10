@@ -9,7 +9,7 @@
 <body>
 
 <div class="box">
-    <h1>Производственный калькулятор стенового комплекта</h1>
+    <h1>Автоматический расчет порядовки, чаш и раскроя бруса</h1>
     
     <h2>Параметры бруса и производства</h2>
     <div class="row">
@@ -20,97 +20,77 @@
     </div>
 
     <h2>Параметры стен, перерубов и выпусков</h2>
-    <div id="w-container"></div>
-    <button type="button" class="btn-blue" id="add-w-btn">+ Добавить стену</button>
-
+    <div id="w-container">
+        <!-- Первая стена создается сразу в HTML для стабильности -->
+        <div class="wall" id="wall-id-1">
+            <div class="wall-head">
+                <span class="wall-title">Стена №1</span>
+                <button type="button" class="btn-red del-w-btn">Удалить стену</button>
+            </div>
+            <div class="row">
+                <div class="item" style="flex: 2;"><label>Длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
+                <div class="item"><label>Выпуск левый (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
+                <div class="item"><label>Выпуск правый (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
+                <div class="item"><label>Венцов прямоугольных</label><input type="number" class="w-crowns" value="16"></div>
+            </div>
+            <div class="row" style="margin-top: 10px;">
+                <div class="item" style="flex: 1;"><label>Пересечения / Оси смежных стен (метры от угла через запятую)</label><input type="text" class="w-intersections" value="4.00"></div>
+            </div>
+            <div style="margin-top: 15px; margin-bottom: 5px;">
+                <button type="button" class="btn-blue add-gable-trigger-btn" style="background: #475569; font-size: 13px; padding: 8px 16px;">+ Надстроить фронтон</button>
+            </div>
+            <div class="gable-fields-block" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px;" data-has-gable="false">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Геометрия фронтонной части</h5>
+                    <button type="button" class="btn-red del-gable-btn" style="padding: 4px 8px; font-size: 11px;">Удалить фронтон</button>
+                </div>
+                <div class="row">
+                    <div class="item"><label>Форма ската</label>
+                        <select class="w-roof-type">
+                            <option value="gable">Двускатный (симметричный)</option>
+                            <option value="shed">Односкатный (веерный)</option>
+                        </select>
+                    </div>
+                    <div class="item"><label>Венцов во фронтоне</label><input type="number" class="w-gable-crowns" value="10"></div>
+                    <div class="item"><label>Угол кровли (градусы)</label><input type="number" class="w-roof-angle" value="30" step="0.1"></div>
+                    <div class="item"><label>Ограничитель конька (м)</label><input type="number" class="w-gable-h" value="2.30" step="0.01"></div>
+                </div>
+            </div>
+            <div class="openings-section">
+                <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (Окна / Двери):</h4>
+                <div class="openings-list">
+                    <div class="opening-item row" style="margin-top:5px; background:#f0f2f1; padding:8px; border-radius:4px; gap: 10px;">
+                        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно"></div>
+                        <div class="item"><label>От левого угла (м)</label><input type="number" class="op-start" value="2.00" step="0.01"></div>
+                        <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
+                        <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
+                        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
+                        <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
+                    </div>
+                </div>
+                <button type="button" class="btn-blue add-op-btn" style="background:#5c6bc0; font-size:12px; margin-top:5px;">+ Добавить проем</button>
+            </div>
+        </div>
+    </div>
+    
+    <button type="button" class="btn-blue" id="add-w-btn" style="margin-top: 20px;">+ Добавить стену</button>
     <button type="button" class="btn-green" id="calc-btn">Сгенерировать порядовку и карту раскроя</button>
 
-    <!-- Сводные результаты -->
     <div class="res" id="r-block">
-        <div class="pdf-header">
-            <button type="button" class="btn-pdf" id="pdf-btn">📥 Сформировать и скачать PDF</button>
-        </div>
-        
+        <div class="pdf-header"><button type="button" class="btn-pdf" id="pdf-btn">📥 Скачать отчет PDF</button></div>
         <div id="pdf-content">
-            <h2 class="pdf-only-title" style="display: none; margin-top: 0; color: #0f172a;">Спецификация и карта линейного раскроя бруса</h2>
-            
-            <h3>Сводные показатели заказа:</h3>
+            <h2 class="pdf-only-title" style="display: none; margin-top: 0; color: #0f172a;">Спецификация и раскрой бруса</h2>
             <div class="res-grid">
                 <div class="res-box">Чистый объем деталей<span id="r-v-net">0.00</span> м³</div>
                 <div class="res-box">Объем заготовок<span id="r-v-gross">0.00</span> м³</div>
                 <div class="res-box">Количество заготовок<span id="r-pcs">0</span> шт.</div>
                 <div class="res-box">Общий процент отходов<span id="r-waste">0.0</span> %</div>
             </div>
-
-            <h3>2D-Чертежи развертки стен и расположения проемов (с осями чаш):</h3>
+            <h3>2D-Развертка стен и осей чаш:</h3>
             <div id="walls-preview-container" style="margin-bottom: 30px;"></div>
-
-            <h3>Чертеж и карта линейного раскроя заготовок:</h3>
+            <h3>Карта линейного раскроя бруса:</h3>
             <div id="cutting-map-container"></div>
         </div>
-    </div>
-</div>
-
-<!-- Шаблон стены -->
-<div id="wall-template" style="display: none;">
-    <div class="wall">
-        <div class="wall-head">
-            <span class="wall-title">Стена</span>
-            <button type="button" class="btn-red del-w-btn">Удалить стену</button>
-        </div>
-        
-        <div class="row">
-            <div class="item" style="flex: 2;"><label>Длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
-            <div class="item"><label>Выпуск левый (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
-            <div class="item"><label>Выпуск правый (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
-            <div class="item"><label>Венцов прямоугольных</label><input type="number" class="w-crowns" value="16"></div>
-        </div>
-
-        <div class="row" style="margin-top: 10px;">
-            <div class="item" style="flex: 1;"><label>Пересечения / Оси смежных стен (метры от угла через запятую)</label><input type="text" class="w-intersections" value="4.00"></div>
-        </div>
-
-        <!-- Кнопка добавления фронтона к прямоугольной стене -->
-        <div style="margin-top: 15px; margin-bottom: 5px;">
-            <button type="button" class="btn-blue add-gable-trigger-btn" style="background: #475569; font-size: 13px; padding: 8px 16px;">+ Надстроить фронтон</button>
-        </div>
-
-        <!-- Отдельный блок фронтона (по умолчанию скрыт) -->
-        <div class="gable-fields-block" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px; position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Геометрия фронтонной части</h5>
-                <button type="button" class="btn-red del-gable-btn" style="padding: 4px 8px; font-size: 11px;">Удалить фронтон</button>
-            </div>
-            <div class="row">
-                <div class="item"><label>Форма ската</label>
-                    <select class="w-roof-type">
-                        <option value="gable">Двускатный (симметричный)</option>
-                        <option value="shed">Односкатный (трапеция)</option>
-                    </select>
-                </div>
-                <div class="item"><label>Венцов во фронтоне</label><input type="number" class="w-gable-crowns" value="10"></div>
-                <div class="item"><label>Угол кровли (градусы)</label><input type="number" class="w-roof-angle" value="30" step="0.1"></div>
-                <div class="item"><label>Ограничитель высоты конька (м)</label><input type="number" class="w-gable-h" value="2.30" step="0.01"></div>
-            </div>
-        </div>
-
-        <div class="openings-section">
-            <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (Окна / Двери):</h4>
-            <div class="openings-list"></div>
-            <button type="button" class="btn-blue add-op-btn" style="background:#5c6bc0; font-size:12px; margin-top:5px;">+ Добавить проем</button>
-        </div>
-    </div>
-</div>
-
-<!-- Шаблон строки проема -->
-<div id="opening-template" style="display: none;">
-    <div class="opening-item row" style="margin-top:5px; background:#f0f2f1; padding:8px; border-radius:4px; gap: 10px;">
-        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно"></div>
-        <div class="item"><label>От левого угла (м)</label><input type="number" class="op-start" value="2.00" step="0.01"></div>
-        <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
-        <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
-        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
-        <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
     </div>
 </div>
 
