@@ -9,7 +9,7 @@
 <body>
 
 <div class="box">
-    <h1>Автоматический расчет порядовки, чаш и раскроя бруса</h1>
+    <h1>Производственный калькулятор стенового комплекта</h1>
     
     <h2>Параметры бруса и производства</h2>
     <div class="row">
@@ -28,11 +28,11 @@
     <!-- Сводные результаты -->
     <div class="res" id="r-block">
         <div class="pdf-header">
-            <button type="button" class="btn-pdf" id="pdf-btn">📥 Скачать отчет в PDF</button>
+            <button type="button" class="btn-pdf" id="pdf-btn">📥 Сформировать и скачать PDF</button>
         </div>
         
         <div id="pdf-content">
-            <h2 class="pdf-only-title" style="display: none; margin-top: 0; color: #2c3e50;">Спецификация стенового комплекта и раскрой</h2>
+            <h2 class="pdf-only-title" style="display: none; margin-top: 0; color: #0f172a;">Спецификация и карта линейного раскроя бруса</h2>
             
             <h3>Сводные показатели заказа:</h3>
             <div class="res-grid">
@@ -60,28 +60,38 @@
         </div>
         
         <div class="row">
-            <div class="item" style="flex: 1.5;"><label>Тип конструкции</label>
-                <select class="w-type" onchange="toggleGableFields(this)">
-                    <option value="normal">Прямоугольная стена</option>
-                    <option value="gable">Стена с фронтоном (двускатная)</option>
-                    <option value="shed">Стена с фронтоном (односкатная / трапеция)</option>
-                </select>
-            </div>
-            <div class="item"><label>Длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
+            <div class="item" style="flex: 2;"><label>Длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
             <div class="item"><label>Выпуск левый (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
             <div class="item"><label>Выпуск правый (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
             <div class="item"><label>Венцов прямоугольных</label><input type="number" class="w-crowns" value="16"></div>
         </div>
 
-        <!-- Поля фронтона, активируются при выборе типа -->
-        <div class="row gable-fields" style="display: none; background: #f8fafc; padding: 16px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 10px;">
-            <div class="item"><label>Венцов во фронтоне</label><input type="number" class="w-gable-crowns" value="10"></div>
-            <div class="item"><label>Угол кровли (градусы)</label><input type="number" class="w-roof-angle" value="30" step="0.1"></div>
-            <div class="item"><label>Макс. высота конька (м)</label><input type="number" class="w-gable-h" value="2.30" step="0.01"></div>
-        </div>
-
         <div class="row" style="margin-top: 10px;">
             <div class="item" style="flex: 1;"><label>Пересечения / Оси смежных стен (метры от угла через запятую)</label><input type="text" class="w-intersections" value="4.00"></div>
+        </div>
+
+        <!-- Кнопка добавления фронтона к прямоугольной стене -->
+        <div style="margin-top: 15px; margin-bottom: 5px;">
+            <button type="button" class="btn-blue add-gable-trigger-btn" style="background: #475569; font-size: 13px; padding: 8px 16px;">+ Надстроить фронтон</button>
+        </div>
+
+        <!-- Отдельный блок фронтона (по умолчанию скрыт) -->
+        <div class="gable-fields-block" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Геометрия фронтонной части</h5>
+                <button type="button" class="btn-red del-gable-btn" style="padding: 4px 8px; font-size: 11px;">Удалить фронтон</button>
+            </div>
+            <div class="row">
+                <div class="item"><label>Форма ската</label>
+                    <select class="w-roof-type">
+                        <option value="gable">Двускатный (симметричный)</option>
+                        <option value="shed">Односкатный (трапеция)</option>
+                    </select>
+                </div>
+                <div class="item"><label>Венцов во фронтоне</label><input type="number" class="w-gable-crowns" value="10"></div>
+                <div class="item"><label>Угол кровли (градусы)</label><input type="number" class="w-roof-angle" value="30" step="0.1"></div>
+                <div class="item"><label>Ограничитель высоты конька (м)</label><input type="number" class="w-gable-h" value="2.30" step="0.01"></div>
+            </div>
         </div>
 
         <div class="openings-section">
