@@ -21,7 +21,6 @@
 
     <h2>Параметры стен, перерубов и выпусков</h2>
     <div id="w-container">
-        <!-- Первая стена с корректными классами управления -->
         <div class="wall" id="wall-id-1">
             <div class="wall-head">
                 <span class="wall-title">Стена №1</span>
@@ -57,14 +56,24 @@
                 </div>
             </div>
             <div class="openings-section">
-                <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (Окна / Двери):</h4>
+                <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (включая окна фронтона):</h4>
                 <div class="openings-list">
+                    <!-- Окно 1: Находится на первом этаже -->
                     <div class="opening-item row" style="margin-top:5px; background:#f0f2f1; padding:8px; border-radius:4px; gap: 10px;">
-                        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно"></div>
-                        <div class="item"><label>От левого угла (м)</label><input type="number" class="op-start" value="2.00" step="0.01"></div>
+                        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно 1 этаж"></div>
+                        <div class="item"><label>От угла (м)</label><input type="number" class="op-start" value="1.00" step="0.01"></div>
                         <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
                         <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
                         <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
+                        <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
+                    </div>
+                    <!-- Окно 2: Специально поднято на уровень фронтона (выше 2.88 м) -->
+                    <div class="opening-item row" style="margin-top:5px; background:#f0f2f1; padding:8px; border-radius:4px; gap: 10px;">
+                        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно фронтона"></div>
+                        <div class="item"><label>От угла (м)</label><input type="number" class="op-start" value="3.25" step="0.01"></div>
+                        <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
+                        <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="3.20" step="0.01"></div>
+                        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.00" step="0.01"></div>
                         <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
                     </div>
                 </div>
