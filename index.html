@@ -60,14 +60,35 @@
         </div>
         
         <div class="row">
+            <div class="item" style="flex: 2;"><label>Тип конструкции</label>
+                <select class="w-type" onchange="toggleGableFields(this)">
+                    <option value="normal">Прямоугольная стена</option>
+                    <option value="gable">Фронтон (двускатный)</option>
+                    <option value="shed">Фронтон (односкатный / трапеция)</option>
+                </select>
+            </div>
             <div class="item" style="flex: 2;"><label>Чистая длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
             <div class="item"><label>Выпуск слева (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
             <div class="item"><label>Выпуск справа (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
             <div class="item"><label>Кол-во венцов</label><input type="number" class="w-crowns" value="16"></div>
         </div>
 
+        <!-- Дополнительные поля для фронтонов (по умолчанию скрыты) -->
+        <div class="row gable-fields" style="display: none; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 10px;">
+            <div class="item"><label>Высота конька / ската (м)</label><input type="number" class="w-gable-h" value="2.00" step="0.01"></div>
+            <div class="item"><label>Мансарда (Венцы фронтона идут СВЕРХУ стены)</label>
+                <select class="w-gable-mode">
+                    <option value="pure">Фронтон от низа (одноэтажный дом)</option>
+                    <option value="mansard">Фронтон сверху (дом с мансардой)</option>
+                </select>
+            </div>
+            <div class="item-info" style="flex: 2; font-size: 12px; color: #64748b; display: flex; align-items: center; padding-left: 10px;">
+                Длина брусьев будет автоматически уменьшаться кверху в зависимости от высоты конька.
+            </div>
+        </div>
+
         <div class="row" style="margin-top: 10px;">
-            <div class="item" style="flex: 1;"><label>Пересечения / Оси смежных стен (метры от угла через запятую, например: 3.5, 6.0)</label><input type="text" class="w-intersections" value="4.00"></div>
+            <div class="item" style="flex: 1;"><label>Пересечения / Оси смежных стен (метры от угла через запятую)</label><input type="text" class="w-intersections" value="4.00"></div>
         </div>
 
         <div class="openings-section">
