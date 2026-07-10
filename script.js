@@ -2,13 +2,16 @@ let wCount = 1;
 const wContainer = document.getElementById('w-container');
 const colors = ['#2ecc71', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#e74c3c', '#f1c40f', '#16a085', '#27ae60', '#2980b9'];
 
+// Назначение событий на главные кнопки
 document.getElementById('add-w-btn').addEventListener('click', addWall);
 document.getElementById('calc-btn').addEventListener('click', calculateCutting);
 document.getElementById('pdf-btn').addEventListener('click', () => window.print());
 
+// Глобальный диспетчер кликов (делегирование событий)
 wContainer.addEventListener('click', function(e) {
     if (!e.target) return;
     
+    // Показать блок фронтона
     if (e.target.classList.contains('add-gable-trigger-btn')) {
         const wallNode = e.target.closest('.wall');
         const gableBlock = wallNode.querySelector('.gable-fields-block');
@@ -18,6 +21,7 @@ wContainer.addEventListener('click', function(e) {
         }
     }
     
+    // Скрыть и удалить фронтон
     if (e.target.classList.contains('del-gable-btn')) {
         const wallNode = e.target.closest('.wall');
         const gableBlock = wallNode.querySelector('.gable-fields-block');
@@ -28,17 +32,20 @@ wContainer.addEventListener('click', function(e) {
         }
     }
 
+    // Удалить всю карточку стены
     if (e.target.classList.contains('del-w-btn')) {
         const wallNode = e.target.closest('.wall');
         if (wallNode) wallNode.remove();
     }
 
+    // Добавить новую строку проема (окно/дверь)
     if (e.target.classList.contains('add-op-btn')) {
         const wallNode = e.target.closest('.wall');
         const openingsList = wallNode.querySelector('.openings-list');
         if (openingsList) addOpening(openingsList);
     }
 
+    // Удалить конкретную строку проема
     if (e.target.classList.contains('del-op-btn')) {
         const item = e.target.closest('.opening-item');
         if (item) item.remove();
