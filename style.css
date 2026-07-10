@@ -1,130 +1,44 @@
 :root {
-    --bg-main: #f4f6f9;
-    --bg-card: #ffffff;
-    --bg-input: #f1f5f9;
-    --border: #e2e8f0;
-    --text: #1e293b;
-    --text-muted: #64748b;
-    
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --success: #059669;
-    --danger: #dc2626;
-    
-    --radius: 6px;
-    --radius-lg: 12px;
+    --bg-main: #f4f6f9; --bg-card: #ffffff; --bg-input: #f1f5f9; --border: #e2e8f0; --text: #1e293b; --text-muted: #64748b;
+    --primary: #2563eb; --primary-hover: #1d4ed8; --success: #059669; --danger: #dc2626; --radius: 6px; --radius-lg: 12px;
 }
-
-/* Базовые стили */
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
-    background: var(--bg-main); 
-    color: var(--text); 
-    padding: 40px 20px; 
-    margin: 0; 
-}
-.box { 
-    max-width: 1040px; 
-    margin: 0 auto; 
-    background: var(--bg-card); 
-    padding: 40px; 
-    border-radius: var(--radius-lg); 
-    box-shadow: 0 10px 25px -5px rgba(30, 41, 59, 0.05); 
-}
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg-main); color: var(--text); padding: 40px 20px; margin: 0; }
+.box { max-width: 1040px; margin: 0 auto; background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); box-shadow: 0 10px 25px -5px rgba(30, 41, 59, 0.05); }
 h1 { font-size: 24px; font-weight: 800; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin: 0 0 30px; }
 h2 { font-size: 18px; margin-top: 35px; }
 h3, h4 { font-size: 14px; margin-top: 20px; }
 h2, h3, h4, .wall-title { font-weight: 700; }
-
-/* Сетка и формы */
 .row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
 .item { display: flex; flex-direction: column; flex: 1; min-width: 140px; }
 label { font-size: 11px; font-weight: 700; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; }
-
-input, select { 
-    padding: 10px 14px; 
-    border: 1px solid var(--border); 
-    border-radius: var(--radius); 
-    background: var(--bg-input); 
-    color: var(--text); 
-    font-size: 14px; 
-    transition: all 0.15s ease;
-}
+input, select { padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-input); color: var(--text); font-size: 14px; }
 input:focus { outline: none; border-color: var(--primary); background: var(--bg-card); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); }
-
-/* Кнопки */
-button { 
-    padding: 12px 24px; 
-    border: none; 
-    border-radius: var(--radius); 
-    cursor: pointer; 
-    font-weight: 600; 
-    font-size: 14px; 
-    display: inline-flex; 
-    align-items: center; 
-    gap: 8px;
-    transition: all 0.15s ease;
-}
+button { padding: 12px 24px; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.15s ease; }
 button:active { transform: scale(0.98); }
 .btn-blue { background: var(--primary); color: white; }
 .btn-blue:hover { background: var(--primary-hover); }
-
 .btn-green { background: var(--success); color: white; width: 100%; font-size: 16px; padding: 16px; margin-top: 35px; border-radius: var(--radius-lg); }
 .btn-green:hover { background: #047857; }
-
 .btn-red { background: rgba(220, 38, 38, 0.08); color: var(--danger); padding: 6px 12px; font-size: 13px; }
 .btn-red:hover { background: var(--danger); color: white; }
-
-.pdf-header { display: flex; justify-content: flex-end; margin-bottom: 25px; }
-.btn-pdf { background: #0f172a; color: white; }
-
-/* Конструкция стены */
 .wall { border: 1px solid var(--border); padding: 25px; border-radius: var(--radius-lg); margin-top: 20px; }
 .wall-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .wall-title { font-size: 18px; }
 .openings-section { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border); }
 .opening-item.row { background: var(--bg-input); padding: 14px; border-radius: var(--radius); align-items: flex-end; }
-
-/* Результаты расчетов */
 .res { display: none; border: 1px solid var(--border); padding: 30px; border-radius: var(--radius-lg); margin-top: 45px; }
 .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
 .res-box { background: #f0fdf4; padding: 20px; border-radius: var(--radius-lg); text-align: center; font-weight: 600; color: #065f46; border: 1px solid #bbf7d0; }
 .res-box span { display: block; color: var(--success); font-size: 26px; font-weight: 800; margin-top: 6px; }
 .res-box:last-child { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
 .res-box:last-child span { color: #d97706; }
-
-/* --- 2D Чертеж развертки стен (CAD стиль) --- */
 .wall-visual-block { border: 1px solid var(--border); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 24px; }
 .wall-visual-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
-.wall-canvas-container { 
-    position: relative; 
-    width: 100%; 
-    background-color: #1e2530; 
-    background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); 
-    background-size: 20px 20px; 
-    overflow: hidden; 
-    border: 1px solid #0f172a;
-    border-radius: 4px;
-}
-.wall-canvas-crown { position: absolute; left: 0; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.3); }
-.wall-canvas-part { 
-    position: absolute; 
-    height: 100%; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    color: #ffffff; 
-    font-size: 10px; 
-    font-weight: 700; 
-    border-right: 1px solid rgba(0,0,0,0.2); 
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5); 
-    overflow: hidden; 
-    white-space: nowrap; 
-}
+.wall-canvas-container { position: relative; width: 100%; background-color: #1e2530; background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; overflow: hidden; border: 1px solid #0f172a; border-radius: 4px; }
+.wall-canvas-crown { position: absolute; left: 0; width: 100%; border-bottom: 1px solid rgba(0, 0, 0, 0.3); }
+.wall-canvas-part { position: absolute; height: 100%; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 10px; font-weight: 700; border-right: 1px solid rgba(0,0,0,0.2); text-shadow: 0 1px 2px rgba(0,0,0,0.5); overflow: hidden; white-space: nowrap; }
 .wall-canvas-opening { position: absolute; background: rgba(239,68,110,0.2); border: 2px dashed #f87171; display: flex; align-items: center; justify-content: center; color: #fca5a5; font-size: 11px; font-weight: 700; z-index: 2; }
 .wall-canvas-cup-line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dotted rgba(255,255,255,0.35); z-index: 3; }
-
-/* --- Чертеж карт линейного раскроя заготовок --- */
 .map-row { display: flex; align-items: center; margin-bottom: 14px; background: var(--bg-input); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius); }
 .map-index { width: 50px; font-weight: 700; color: var(--text-muted); }
 .map-visual-bar { flex: 1; height: 36px; background: #e2e8f0; border-radius: 6px; display: flex; overflow: hidden; position: relative; border: 1px solid #cbd5e1; }
@@ -132,8 +46,6 @@ button:active { transform: scale(0.98); }
 .map-trim { background: #64748b; height: 100%; opacity: 0.6; }
 .map-waste { background: #cbd5e1; height: 100%; color: #475569; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 .map-spec-text { width: 300px; padding-left: 24px; font-size: 12px; font-family: monospace; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* --- Настройки адаптивной печати PDF --- */
 @media print {
     @page { size: A4 landscape; margin: 15mm; }
     body { background: white; color: black; }
