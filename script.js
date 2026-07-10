@@ -2,16 +2,13 @@ let wCount = 1;
 const wContainer = document.getElementById('w-container');
 const colors = ['#2ecc71', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#e74c3c', '#f1c40f', '#16a085', '#27ae60', '#2980b9'];
 
-// Регистрация главных кнопок приложения
 document.getElementById('add-w-btn').addEventListener('click', addWall);
 document.getElementById('calc-btn').addEventListener('click', calculateCutting);
 document.getElementById('pdf-btn').addEventListener('click', () => window.print());
 
-// Глобальный перехватчик кликов (Делегирование событий)
 wContainer.addEventListener('click', function(e) {
     if (!e.target) return;
     
-    // Кнопка "+ Надстроить фронтон"
     if (e.target.classList.contains('add-gable-trigger-btn')) {
         const wallNode = e.target.closest('.wall');
         const gableBlock = wallNode.querySelector('.gable-fields-block');
@@ -21,7 +18,6 @@ wContainer.addEventListener('click', function(e) {
         }
     }
     
-    // Кнопка "Удалить фронтон"
     if (e.target.classList.contains('del-gable-btn')) {
         const wallNode = e.target.closest('.wall');
         const gableBlock = wallNode.querySelector('.gable-fields-block');
@@ -32,20 +28,17 @@ wContainer.addEventListener('click', function(e) {
         }
     }
 
-    // Кнопка "Удалить стену"
     if (e.target.classList.contains('del-w-btn')) {
         const wallNode = e.target.closest('.wall');
         if (wallNode) wallNode.remove();
     }
 
-    // Кнопка "+ Добавить проем"
     if (e.target.classList.contains('add-op-btn')) {
         const wallNode = e.target.closest('.wall');
         const openingsList = wallNode.querySelector('.openings-list');
         if (openingsList) addOpening(openingsList);
     }
 
-    // Кнопка удаления проема
     if (e.target.classList.contains('del-op-btn')) {
         const item = e.target.closest('.opening-item');
         if (item) item.remove();
@@ -57,7 +50,7 @@ function addWall() {
     if (!sampleWall) return;
 
     const newWall = sampleWall.cloneNode(true);
-    newWall.id = 'wall-id-' + wCount;
+    newWall.removeAttribute('id');
     newWall.querySelector('.wall-title').innerText = 'Стена №' + wCount;
     
     const addGableBtn = newWall.querySelector('.add-gable-trigger-btn');
