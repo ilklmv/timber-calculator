@@ -72,23 +72,27 @@ function calculateCutting() {
         const wLabel = `Ст.${wIdx + 1}`;
         const wType = wallNode.querySelector('.w-type').value;
         const wLenClean = parseFloat(wallNode.querySelector('.w-len').value);
-        const wCrowns = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
         
+        // Прямоугольная база + фронтонная надстройка
+        const wCrownsNormal = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
+        const wCrownsGable = (wType !== 'normal') ? (parseInt(wallNode.querySelector('.w-gable-crowns').value) || 0) : 0;
+        const wCrownsTotal = wCrownsNormal + wCrownsGable;
+
         const leftOverhang = (parseFloat(wallNode.querySelector('.w-left-overhang').value) || 0) / 1000;
         const rightOverhang = (parseFloat(wallNode.querySelector('.w-right-overhang').value) || 0) / 1000;
         
-        const gableH = parseFloat(wallNode.querySelector('.w-gable-h').value) || 0;
-        const gableMode = wallNode.querySelector('.w-gable-mode').value;
+        const roofAngleDeg = parseFloat(wallNode.querySelector('.w-roof-angle').value) || 0;
+        const maxGableH = parseFloat(wallNode.querySelector('.w-gable-h').value) || 0;
 
         const intersectionsInput = wallNode.querySelector('.w-intersections').value;
         let intersections = intersectionsInput.split(',')
             .map(x => parseFloat(x.trim()))
             .filter(x => !isNaN(x) && x >= 0 && x <= wLenClean);
 
-        if (isNaN(wLenClean) || wLenClean <= 0 || wCrowns <= 0) return;
+        if (isNaN(wLenClean) || wLenClean <= 0 || wCrownsNormal <= 0) return;
 
         const wLenTotal = leftOverhang + wLenClean + rightOverhang;
-        const totalWallHeight = wCrowns * bH;
+        const totalWallHeight = wCrownsTotal * bH;
 
         let absoluteCups = intersections.map(x => x + leftOverhang);
         absoluteCups.unshift(leftOverhang);
@@ -100,12 +104,12 @@ function calculateCutting() {
         
         const visualTitle = document.createElement('div');
         visualTitle.className = 'wall-visual-title';
-        visualTitle.innerText = `Развертка стены №${wIdx + 1} (${wType==='normal'?'Прямоугольная':wType==='gable'?'Двускатный фронтон':'Односкатный фронтон'}, Полная длина: ${wLenTotal.toFixed(2)}м, ${wCrowns} венцов)`;
+        visualTitle.innerText = `Развертка стены №${wIdx + 1} (Всего венцов: ${wCrownsTotal}, Полная длина: ${wLenTotal.toFixed(2)}м)`;
         visualBlock.appendChild(visualTitle);
 
         const canvas = document.createElement('div');
         canvas.className = 'wall-canvas-container';
-        canvas.style.height = `${wCrowns * 22}px`; 
+        canvas.style.height = `${wCrownsTotal * 22}px`; 
         visualBlock.appendChild(canvas);
         previewContainer.appendChild(visualBlock);
 
@@ -133,9 +137,9 @@ function calculateCutting() {
                 let vEnd = Math.ceil((opTop - 0.001) / bH);
 
                 vStart = Math.max(1, vStart);
-                vEnd = Math.min(wCrowns, vEnd);
+                vEnd = Math.min(wCrownsTotal, vEnd);
 
-                if (vStart <= wCrowns && vEnd >= 1) {
+                if (vStart <= wCrownsTotal && vEnd >= 1) {
                     openings.push({
                         name, start: opStartAbs, end: opStartAbs + opWidth, width: opWidth, bottom: opBottom, height: opHeight, vStart, vEnd
                     });
@@ -152,7 +156,8 @@ function calculateCutting() {
             }
         });
 
-        for (let crown = 1; crown <= wCrowns; crown++) {
+        // Единый порядовый цикл по всей конструкции трапеции/двускатной стены
+        for (let crown = 1; crown <= wCrownsTotal; crown++) {
             const crownDiv = document.createElement('div');
             crownDiv.className = 'wall-canvas-crown';
             crownDiv.style.bottom = `${((crown - 1) * bH / totalWallHeight) * 100}%`;
@@ -161,38 +166,30 @@ function calculateCutting() {
 
             let currentLineLeftBound = 0;
             let currentLineRightBound = wLenTotal;
-            let heightInGable = 0;
-            let isGableRow = false;
 
-            if (wType === 'gable' || wType === 'shed') {
-                if (gableMode === 'pure') {
-                    heightInGable = (crown - 0.5) * bH; 
-                    isGableRow = true;
-                } else {
-                    const gableStartHeight = Math.max(0, totalWallHeight - gableH);
-                    const rowMidHeight = (crown - 0.5) * bH;
-                    if (rowMidHeight > gableStartHeight) {
-                        heightInGable = rowMidHeight - gableStartHeight;
-                        isGableRow = true;
-                    }
+            // Если зашли в зону фронтона (выше прямоугольной базы) — вычисляем подрезку ската
+            if (crown > wCrownsNormal && wType !== 'normal') {
+                const heightInsideGable = (crown - wCrownsNormal - 0.5) * bH;
+                
+                // Расчет отступа ската на основе угла кровли (или ограничителя по высоте)
+                let lateralCutback = heightInsideGable * Math.tan((90 - roofAngleDeg) * Math.PI / 180);
+                if (maxGableH > 0 && heightInsideGable > maxGableH) {
+                    lateralCutback = wLenTotal; // Полная отсечка
                 }
-            }
 
-            if (isGableRow && gableH > 0) {
-                const ratio = Math.max(0, Math.min(1, heightInGable / gableH));
                 if (wType === 'gable') {
-                    const centerAbs = wLenTotal / 2;
-                    const halfWidthAtHeight = (wLenTotal / 2) * (1 - ratio);
-                    currentLineLeftBound = centerAbs - halfWidthAtHeight;
-                    currentLineRightBound = centerAbs + halfWidthAtHeight;
+                    // Симметричный двускатный срез брусьев с двух сторон к центру
+                    currentLineLeftBound = Math.min(wLenTotal / 2, lateralCutback);
+                    currentLineRightBound = Math.max(wLenTotal / 2, wLenTotal - lateralCutback);
                 } else if (wType === 'shed') {
+                    // Односкатная трапеция — усечение идет только с правого края
                     currentLineLeftBound = 0;
-                    currentLineRightBound = wLenTotal * (1 - ratio);
+                    currentLineRightBound = Math.max(0, wLenTotal - lateralCutback);
                 }
             }
 
             const activeRowLength = currentLineRightBound - currentLineLeftBound;
-            if (activeRowLength <= 0.05) continue; 
+            if (activeRowLength <= 0.05) continue; // Конек сформирован полностью
 
             let validCupsInRow = absoluteCups.filter(cup => cup >= currentLineLeftBound && cup <= currentLineRightBound);
             if (!validCupsInRow.includes(currentLineLeftBound)) validCupsInRow.unshift(currentLineLeftBound);
@@ -251,21 +248,19 @@ function calculateCutting() {
                         registerAndRenderPart(currentX, Math.min(op.start, segment.end));
                     }
                     if (op.end > currentX && op.start < segment.end) {
-currentX = Math.max(currentX, Math.min(op.end, segment.end));
+                        currentX = Math.max(currentX, Math.min(op.end, segment.end));
                     }
                 });
-                
                 if (segment.end > currentX) {
                     registerAndRenderPart(currentX, segment.end);
                 }
             });
         }
     });
-    
----
+    ---
 
-### 🪵 Часть 3: Сортировка деталей, линейный раскрой заготовок (FFD) и вывод отчета
-*(Вставьте этот финальный блок в самый конец файла `script.js` сразу после второй части)*
+### 🪵 Блок 4: `script.js` — Часть 3 из 3
+*Алгоритм FFD-раскроя по заготовкам бруса и вывод графики отчета.*
 
 ```javascript
     if (!validWallFound || flatParts.length === 0) {
