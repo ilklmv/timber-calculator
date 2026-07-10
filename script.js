@@ -39,6 +39,15 @@ function addOpening(container) {
     container.appendChild(newOpening);
 }
 
+function toggleGableFields(selectElement) {
+    const wallNode = selectElement.closest('.wall');
+    const gableFields = wallNode.querySelector('.gable-fields');
+    if (selectElement.value === 'gable' || selectElement.value === 'shed') {
+        gableFields.style.display = 'flex';
+    } else {
+        gableFields.style.display = 'none';
+    }
+}
 function calculateCutting() {
     const bW = parseFloat(document.getElementById('b-w').value) / 1000;
     const bH = parseFloat(document.getElementById('b-h').value) / 1000; 
@@ -61,12 +70,16 @@ function calculateCutting() {
     activeWalls.forEach((wallNode, wIdx) => {
         validWallFound = true;
         const wLabel = `Ст.${wIdx + 1}`;
+        const wType = wallNode.querySelector('.w-type').value;
         const wLenClean = parseFloat(wallNode.querySelector('.w-len').value);
         const wCrowns = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
         
         const leftOverhang = (parseFloat(wallNode.querySelector('.w-left-overhang').value) || 0) / 1000;
         const rightOverhang = (parseFloat(wallNode.querySelector('.w-right-overhang').value) || 0) / 1000;
         
+        const gableH = parseFloat(wallNode.querySelector('.w-gable-h').value) || 0;
+        const gableMode = wallNode.querySelector('.w-gable-mode').value;
+
         const intersectionsInput = wallNode.querySelector('.w-intersections').value;
         let intersections = intersectionsInput.split(',')
             .map(x => parseFloat(x.trim()))
@@ -87,7 +100,7 @@ function calculateCutting() {
         
         const visualTitle = document.createElement('div');
         visualTitle.className = 'wall-visual-title';
-        visualTitle.innerText = `Развертка стены №${wIdx + 1} (Полная длина бруса: ${wLenTotal.toFixed(2)}м, ${wCrowns} венцов)`;
+        visualTitle.innerText = `Развертка стены №${wIdx + 1} (${wType==='normal'?'Прямоугольная':wType==='gable'?'Двускатный фронтон':'Односкатный фронтон'}, Полная длина: ${wLenTotal.toFixed(2)}м, ${wCrowns} венцов)`;
         visualBlock.appendChild(visualTitle);
 
         const canvas = document.createElement('div');
@@ -146,15 +159,51 @@ function calculateCutting() {
             crownDiv.style.height = `${(bH / totalWallHeight) * 100}%`;
             canvas.appendChild(crownDiv);
 
-            let allowedSplicePoints = [];
-            if (wLenTotal > usableStockLength) {
-                allowedSplicePoints = (crown % 2 === 0) ? [...absoluteCups].reverse() : [...absoluteCups];
+            let currentLineLeftBound = 0;
+            let currentLineRightBound = wLenTotal;
+            let heightInGable = 0;
+            let isGableRow = false;
+
+            if (wType === 'gable' || wType === 'shed') {
+                if (gableMode === 'pure') {
+                    heightInGable = (crown - 0.5) * bH; 
+                    isGableRow = true;
+                } else {
+                    const gableStartHeight = Math.max(0, totalWallHeight - gableH);
+                    const rowMidHeight = (crown - 0.5) * bH;
+                    if (rowMidHeight > gableStartHeight) {
+                        heightInGable = rowMidHeight - gableStartHeight;
+                        isGableRow = true;
+                    }
+                }
             }
 
-            let currentLineSegments = [];
-            let segmentStartX = 0;
+            if (isGableRow && gableH > 0) {
+                const ratio = Math.max(0, Math.min(1, heightInGable / gableH));
+                if (wType === 'gable') {
+                    const centerAbs = wLenTotal / 2;
+                    const halfWidthAtHeight = (wLenTotal / 2) * (1 - ratio);
+                    currentLineLeftBound = centerAbs - halfWidthAtHeight;
+                    currentLineRightBound = centerAbs + halfWidthAtHeight;
+                } else if (wType === 'shed') {
+                    currentLineLeftBound = 0;
+                    currentLineRightBound = wLenTotal * (1 - ratio);
+                }
+            }
 
-            while (wLenTotal - segmentStartX > usableStockLength) {
+            const activeRowLength = currentLineRightBound - currentLineLeftBound;
+            if (activeRowLength <= 0.05) continue; 
+
+            let validCupsInRow = absoluteCups.filter(cup => cup >= currentLineLeftBound && cup <= currentLineRightBound);
+            if (!validCupsInRow.includes(currentLineLeftBound)) validCupsInRow.unshift(currentLineLeftBound);
+            if (!validCupsInRow.includes(currentLineRightBound)) validCupsInRow.push(currentLineRightBound);
+            validCupsInRow.sort((a, b) => a - b);
+
+            let allowedSplicePoints = (crown % 2 === 0) ? [...validCupsInRow].reverse() : [...validCupsInRow];
+            let currentLineSegments = [];
+            let segmentStartX = currentLineLeftBound;
+
+            while (currentLineRightBound - segmentStartX > usableStockLength) {
                 let spliceX = segmentStartX;
                 for (let cup of allowedSplicePoints) {
                     if (cup > segmentStartX && cup - segmentStartX <= usableStockLength) {
@@ -168,7 +217,7 @@ function calculateCutting() {
                 currentLineSegments.push({ start: segmentStartX, end: spliceX });
                 segmentStartX = spliceX;
             }
-            currentLineSegments.push({ start: segmentStartX, end: wLenTotal });
+            currentLineSegments.push({ start: segmentStartX, end: currentLineRightBound });
 
             let activeOps = openings.filter(op => crown >= op.vStart && crown <= op.vEnd);
             activeOps.sort((a, b) => a.start - b.start);
@@ -202,16 +251,23 @@ function calculateCutting() {
                         registerAndRenderPart(currentX, Math.min(op.start, segment.end));
                     }
                     if (op.end > currentX && op.start < segment.end) {
-                        currentX = Math.max(currentX, Math.min(op.end, segment.end));
+currentX = Math.max(currentX, Math.min(op.end, segment.end));
                     }
                 });
-
+                
                 if (segment.end > currentX) {
                     registerAndRenderPart(currentX, segment.end);
                 }
             });
         }
     });
+    
+---
+
+### 🪵 Часть 3: Сортировка деталей, линейный раскрой заготовок (FFD) и вывод отчета
+*(Вставьте этот финальный блок в самый конец файла `script.js` сразу после второй части)*
+
+```javascript
     if (!validWallFound || flatParts.length === 0) {
         alert('Добавьте хотя бы одну стену с корректными размерами!');
         return;
