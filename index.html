@@ -7,11 +7,10 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-       
+
 <div class="box">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 30px;">
         <h1 style="border: none; margin: 0; padding: 0;">Производственный калькулятор стенового комплекта</h1>
-        <h1 style="border: none; margin: 0; padding: 0;">Разработал архитектор Климов И.Д.</h1>
         <button type="button" class="btn-pdf" id="pdf-btn" style="padding: 10px 20px; background: #0f172a; color: white;">📥 Скачать отчет PDF</button>
     </div>
     
@@ -21,7 +20,6 @@
         <div class="item"><label>Рабочая высота венца (мм)</label><input type="number" id="b-h" value="180"></div>
         <div class="item"><label>Длина заготовки (м)</label><input type="number" id="s-l" value="6.00" step="0.01"></div>
         <div class="item"><label>Припуск на торцовку (мм)</label><input type="number" id="trim" value="50"></div>
-        <div class="item"><label>Припуск на фигурный пропил (мм)</label><input type="number" id="fig-trim" value="80"></div>
     </div>
 
     <h2>Параметры стен, перерубов и выпусков</h2>
@@ -33,28 +31,28 @@
             </div>
             <div class="row">
                 <div class="item" style="flex: 2;"><label>Длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
-                <div class="item"><label>Выпуск левый (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
-                <div class="item"><label>Торец слева</label>
-                    <select class="w-left-style">
-                        <option value="straight">Прямой рез</option>
-                        <option value="figured">Фигурный выпуск</option>
-                    </select>
-                </div>
-                <div class="item"><label>Выпуск правый (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
-                <div class="item"><label>Торец справа</label>
-                    <select class="w-right-style">
-                        <option value="straight">Прямой рез</option>
-                        <option value="figured">Фигурный выпуск</option>
-                    </select>
-                </div>
+                <div class="item"><label>Базовый выпуск левый (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
+                <div class="item"><label>Базовый выпуск правый (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
                 <div class="item"><label>Венцов прямоугольных</label><input type="number" class="w-crowns" value="16"></div>
             </div>
             <div class="row" style="margin-top: 10px;">
-                <div class="item" style="flex: 1;"><label>Пересечения / Оси смежных стен (метры от угла через запятую)</label><input type="text" class="w-intersections" value="4.00"></div>
+                <div class="item" style="flex: 2;"><label>Пересечения / Оси смежных стен (м от угла)</label><input type="text" class="w-intersections" value="4.00"></div>
+                <div class="item" style="flex: 1;"><label>Декоративный зарез торцов</label>
+                    <select class="w-overhang-style" onchange="document.getElementById('calc-btn').click();">
+                        <option value="straight">Прямой рез (классика)</option>
+                        <option value="rounded">Радиусный (круглый)</option>
+                        <option value="bevel">Косой рез (под 45°)</option>
+                    </select>
+                </div>
             </div>
-            <div style="margin-top: 15px; margin-bottom: 5px;">
+            
+            <!-- Кнопки надстроек -->
+            <div style="margin-top: 15px; margin-bottom: 5px; display: flex; gap: 10px;">
                 <button type="button" class="btn-blue add-gable-trigger-btn" style="background: #475569; font-size: 13px; padding: 8px 16px;">+ Надстроить фронтон</button>
+                <button type="button" class="btn-blue add-console-trigger-btn" style="background: #64748b; font-size: 13px; padding: 8px 16px;">+ Консольные выпуски под кровлю</button>
             </div>
+
+            <!-- Блок фронтона (скрыт по умолчанию) -->
             <div class="gable-fields-block" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px;" data-has-gable="false">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Геометрия фронтонной части</h5>
@@ -72,6 +70,21 @@
                     <div class="item"><label>Ограничитель конька (м)</label><input type="number" class="w-gable-h" value="2.30" step="0.01"></div>
                 </div>
             </div>
+
+            <!-- НОВЫЙ БЛОК: Консольные выпуски под кровлю (скрыт по умолчанию) -->
+            <div class="console-fields-block" style="display: none; background: #f0f4f8; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 15px;" data-has-console="false">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Параметры консольных выносов под свесы крыши</h5>
+                    <button type="button" class="btn-red del-console-btn" style="padding: 4px 8px; font-size: 11px;">Удалить выпуски</button>
+                </div>
+                <div class="row">
+                    <div class="item"><label>С какого венца начать</label><input type="number" class="w-console-start" value="14"></div>
+                    <div class="item"><label>Сколько венцов выпуска</label><input type="number" class="w-console-count" value="3"></div>
+                    <div class="item"><label>Шаг прироста левого выноса (мм/венец)</label><input type="number" class="w-console-left-step" value="150"></div>
+                    <div class="item"><label>Шаг прироста правого выноса (мм/венец)</label><input type="number" class="w-console-right-step" value="150"></div>
+                </div>
+            </div>
+
             <div class="openings-section">
                 <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (включая окна фронтона):</h4>
                 <div class="openings-list">
@@ -81,14 +94,6 @@
                         <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
                         <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
                         <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
-                        <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
-                    </div>
-                    <div class="opening-item row" style="margin-top:5px; background:#f0f2f1; padding:8px; border-radius:4px; gap: 10px;">
-                        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно фронтона"></div>
-                        <div class="item"><label>От угла (м)</label><input type="number" class="op-start" value="3.25" step="0.01"></div>
-                        <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
-                        <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="3.20" step="0.01"></div>
-                        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.00" step="0.01"></div>
                         <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
                     </div>
                 </div>
