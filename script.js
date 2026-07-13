@@ -2,53 +2,54 @@ let wCount = 1;
 const wContainer = document.getElementById('w-container');
 const colors = ['#2ecc71', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#e74c3c', '#f1c40f', '#16a085', '#27ae60', '#2980b9'];
 
-// Назначение событий на главные кнопки приложения
 document.getElementById('add-w-btn').addEventListener('click', addWall);
 document.getElementById('calc-btn').addEventListener('click', calculateCutting);
 document.getElementById('pdf-btn').addEventListener('click', () => window.print());
 
-// Глобальный диспетчер кликов (делегирование событий в контейнере стен)
 wContainer.addEventListener('click', function(e) {
     if (!e.target) return;
     
-    // Кнопка "+ Надстроить фронтон"
+    // Показать блок фронтона
     if (e.target.classList.contains('add-gable-trigger-btn')) {
         const wallNode = e.target.closest('.wall');
         const gableBlock = wallNode.querySelector('.gable-fields-block');
-        if (gableBlock) {
-            gableBlock.style.display = 'block';
-            e.target.style.display = 'none';
-        }
+        if (gableBlock) { gableBlock.style.display = 'block'; e.target.style.display = 'none'; }
     }
     
-    // Кнопка "Удалить фронтон"
+    // Скрыть блок фронтона
     if (e.target.classList.contains('del-gable-btn')) {
         const wallNode = e.target.closest('.wall');
         const gableBlock = wallNode.querySelector('.gable-fields-block');
         const addGableBtn = wallNode.querySelector('.add-gable-trigger-btn');
-        if (gableBlock && addGableBtn) {
-            gableBlock.style.display = 'none';
-            addGableBtn.style.display = 'inline-flex';
-        }
+        if (gableBlock && addGableBtn) { gableBlock.style.display = 'none'; addGableBtn.style.display = 'inline-flex'; }
     }
 
-    // Кнопка "Удалить стену"
-    if (e.target.classList.contains('del-w-btn')) {
+    // НОВЫЙ МЕТОД: Показать блок консольных выпусков
+    if (e.target.classList.contains('add-console-trigger-btn')) {
         const wallNode = e.target.closest('.wall');
-        if (wallNode) wallNode.remove();
+        const consoleBlock = wallNode.querySelector('.console-fields-block');
+        if (consoleBlock) { consoleBlock.style.display = 'block'; e.target.style.display = 'none'; }
+    }
+    
+    // НОВЫЙ МЕТОД: Скрыть блок консольных выпусков
+    if (e.target.classList.contains('del-console-btn')) {
+        const wallNode = e.target.closest('.wall');
+        const consoleBlock = wallNode.querySelector('.console-fields-block');
+        const addConsoleBtn = wallNode.querySelector('.add-console-trigger-btn');
+        if (consoleBlock && addConsoleBtn) { consoleBlock.style.display = 'none'; addConsoleBtn.style.display = 'inline-flex'; }
     }
 
-    // Кнопка "+ Добавить проем"
+    if (e.target.classList.contains('del-w-btn')) {
+        const wallNode = e.target.closest('.wall'); if (wallNode) wallNode.remove();
+    }
+
     if (e.target.classList.contains('add-op-btn')) {
         const wallNode = e.target.closest('.wall');
-        const openingsList = wallNode.querySelector('.openings-list');
-        if (openingsList) addOpening(openingsList);
+        const openingsList = wallNode.querySelector('.openings-list'); if (openingsList) addOpening(openingsList);
     }
 
-    // Кнопка удаления конкретного проема
     if (e.target.classList.contains('del-op-btn')) {
-        const item = e.target.closest('.opening-item');
-        if (item) item.remove();
+        const item = e.target.closest('.opening-item'); if (item) item.remove();
     }
 });
 function addWall() {
@@ -60,18 +61,18 @@ function addWall() {
     newWall.removeAttribute('id');
     newWall.querySelector('.wall-title').innerText = 'Стена №' + wCount;
     
+    // Сброс состояния фронтона
     const addGableBtn = newWall.querySelector('.add-gable-trigger-btn');
     const gableBlock = newWall.querySelector('.gable-fields-block');
-    if (addGableBtn && gableBlock) {
-        addGableBtn.style.display = 'inline-flex';
-        gableBlock.style.display = 'none';
-    }
+    if (addGableBtn && gableBlock) { addGableBtn.style.display = 'inline-flex'; gableBlock.style.display = 'none'; }
+
+    // Сброс состояния консолей
+    const addConsoleBtn = newWall.querySelector('.add-console-trigger-btn');
+    const consoleBlock = newWall.querySelector('.console-fields-block');
+    if (addConsoleBtn && consoleBlock) { addConsoleBtn.style.display = 'inline-flex'; consoleBlock.style.display = 'none'; }
 
     const openingsList = newWall.querySelector('.openings-list');
-    if (openingsList) {
-        openingsList.innerHTML = '';
-        addOpening(openingsList);
-    }
+    if (openingsList) { openingsList.innerHTML = ''; addOpening(openingsList); }
     wContainer.appendChild(newWall);
 }
 
@@ -116,16 +117,25 @@ function calculateCutting() {
         const gableBlock = wallNode.querySelector('.gable-fields-block');
         const hasGable = gableBlock && gableBlock.style.display === 'block';
 
+        const consoleBlock = wallNode.querySelector('.console-fields-block');
+        const hasConsole = consoleBlock && consoleBlock.style.display === 'block';
+
         const wType = hasGable ? gableBlock.querySelector('.w-roof-type').value : 'normal';
         const wCrownsGable = hasGable ? (parseInt(gableBlock.querySelector('.w-gable-crowns').value) || 0) : 0;
         const wCrownsTotal = wCrownsNormal + wCrownsGable;
 
-        const leftOverhang = (parseFloat(wallNode.querySelector('.w-left-overhang').value) || 0) / 1000;
-        const rightOverhang = (parseFloat(wallNode.querySelector('.w-right-overhang').value) || 0) / 1000;
+        const baseLeftOverhang = (parseFloat(wallNode.querySelector('.w-left-overhang').value) || 0) / 1000;
+        const baseRightOverhang = (parseFloat(wallNode.querySelector('.w-right-overhang').value) || 0) / 1000;
         
         const roofAngleDeg = hasGable ? (parseFloat(gableBlock.querySelector('.w-roof-angle').value) || 0) : 0;
         const maxGableH = hasGable ? (parseFloat(gableBlock.querySelector('.w-gable-h').value) || 0) : 0;
         const overhangStyle = wallNode.querySelector('.w-overhang-style').value;
+
+        // Параметры консольных выпусков
+        const cStart = hasConsole ? (parseInt(consoleBlock.querySelector('.w-console-start').value) || 1) : 0;
+        const cCount = hasConsole ? (parseInt(consoleBlock.querySelector('.w-console-count').value) || 0) : 0;
+        const cLeftStep = hasConsole ? ((parseFloat(consoleBlock.querySelector('.w-console-left-step').value) || 0) / 1000) : 0;
+        const cRightStep = hasConsole ? ((parseFloat(consoleBlock.querySelector('.w-console-right-step').value) || 0) / 1000) : 0;
 
         const intersectionsInput = wallNode.querySelector('.w-intersections').value;
         let intersections = intersectionsInput.split(',')
@@ -134,22 +144,24 @@ function calculateCutting() {
 
         if (isNaN(wLenClean) || wLenClean <= 0 || wCrownsNormal <= 0) return;
 
-        const wLenTotal = leftOverhang + wLenClean + rightOverhang;
-        const totalWallHeight = wCrownsTotal * bH;
+        // Считаем максимальные выносы для масштабирования холста
+        let maxLOverhang = baseLeftOverhang;
+        let maxROverhang = baseRightOverhang;
+        if (hasConsole) {
+            maxLOverhang += cCount * cLeftStep;
+            maxROverhang += cCount * cRightStep;
+        }
 
-        let absoluteCups = intersections.map(x => x + leftOverhang);
-        absoluteCups.unshift(leftOverhang);
-        absoluteCups.push(wLenClean + leftOverhang);
-        absoluteCups = [...new Set(absoluteCups)].sort((a, b) => a - b);
+        const wLenCanvasMax = maxLOverhang + wLenClean + maxROverhang;
+        const totalWallHeight = wCrownsTotal * bH;
 
         const visualBlock = document.createElement('div');
         visualBlock.className = 'wall-visual-block';
-        // Передаем стиль фигурного выпуска в качестве HTML-атрибута для активации CSS-стилей
         visualBlock.setAttribute('has-style', overhangStyle);
         
         const visualTitle = document.createElement('div');
         visualTitle.className = 'wall-visual-title';
-        visualTitle.innerText = `Развертка стены №${wIdx + 1} (База: ${wCrownsNormal}в. ${hasGable ? '+ Фронтон: ' + wCrownsGable + 'в.' : ''})`;
+        visualTitle.innerText = `Развертка стены №${wIdx + 1} (Венцов: ${wCrownsTotal}, Свесы кровли: Левый макс. ${maxLOverhang.toFixed(2)}м, Правый макс. ${maxROverhang.toFixed(2)}м)`;
         visualBlock.appendChild(visualTitle);
 
         const canvas = document.createElement('div');
@@ -158,16 +170,21 @@ function calculateCutting() {
         visualBlock.appendChild(canvas);
         previewContainer.appendChild(visualBlock);
 
-        absoluteCups.forEach(cupX => {
+        // Чертим оси перерубов (ось 0м смещается вправо на максимальный левый выпуск)
+        const leftBaseOffset = maxLOverhang;
+        let canvasCups = intersections.map(x => x + leftBaseOffset);
+        canvasCups.unshift(leftBaseOffset);
+        canvasCups.push(wLenClean + leftBaseOffset);
+
+        canvasCups.forEach(cupX => {
             const cupLine = document.createElement('div');
             cupLine.className = 'wall-canvas-cup-line';
-            cupLine.style.left = `${(cupX / wLenTotal) * 100}%`;
+            cupLine.style.left = `${(cupX / wLenCanvasMax) * 100}%`;
             canvas.appendChild(cupLine);
         });
 
         let openings = [];
         const opNodes = wallNode.querySelectorAll('.opening-item');
-        
         opNodes.forEach(opNode => {
             const name = opNode.querySelector('.op-name').value.trim() || 'Проем';
             const opStartClean = parseFloat(opNode.querySelector('.op-start').value);
@@ -176,28 +193,23 @@ function calculateCutting() {
             const opHeight = parseFloat(opNode.querySelector('.op-height').value) || 0;
 
             if (!isNaN(opStartClean) && !isNaN(opWidth) && opWidth > 0 && opHeight > 0) {
-                const opStartAbs = opStartClean + leftOverhang;
+                const opStartAbs = opStartClean + leftBaseOffset;
                 const opTop = opBottom + opHeight; 
                 let vStart = Math.floor(opBottom / bH) + 1;
                 let vEnd = Math.ceil((opTop - 0.001) / bH);
+                vStart = Math.max(1, Math.min(wCrownsTotal, vStart));
+                vEnd = Math.max(1, Math.min(wCrownsTotal, vEnd));
 
-                vStart = Math.max(1, vStart);
-                vEnd = Math.min(wCrownsTotal, vEnd);
+                openings.push({ name, start: opStartAbs, end: opStartAbs + opWidth, width: opWidth, bottom: opBottom, height: opHeight, vStart, vEnd });
 
-                if (vStart <= wCrownsTotal && vEnd >= 1) {
-                    openings.push({
-                        name, start: opStartAbs, end: opStartAbs + opWidth, width: opWidth, bottom: opBottom, height: opHeight, vStart, vEnd
-                    });
-
-                    const opDiv = document.createElement('div');
-                    opDiv.className = 'wall-canvas-opening';
-                    opDiv.style.left = `${(opStartAbs / wLenTotal) * 100}%`;
-                    opDiv.style.width = `${(opWidth / wLenTotal) * 100}%`;
-                    opDiv.style.bottom = `${(opBottom / totalWallHeight) * 100}%`;
-                    opDiv.style.height = `${(opHeight / totalWallHeight) * 100}%`;
-                    opDiv.innerText = name;
-                    canvas.appendChild(opDiv);
-                }
+                const opDiv = document.createElement('div');
+                opDiv.className = 'wall-canvas-opening';
+                opDiv.style.left = `${(opStartAbs / wLenCanvasMax) * 100}%`;
+                opDiv.style.width = `${(opWidth / wLenCanvasMax) * 100}%`;
+                opDiv.style.bottom = `${(opBottom / totalWallHeight) * 100}%`;
+                opDiv.style.height = `${(opHeight / totalWallHeight) * 100}%`;
+                opDiv.innerText = name;
+                canvas.appendChild(opDiv);
             }
         });
         for (let crown = 1; crown <= wCrownsTotal; crown++) {
@@ -207,32 +219,46 @@ function calculateCutting() {
             crownDiv.style.height = `${(bH / totalWallHeight) * 100}%`;
             canvas.appendChild(crownDiv);
 
-            let currentLineLeftBound = 0;
-            let currentLineRightBound = wLenTotal;
+            // Динамический расчет длины выносов для ТЕКУЩЕГО венца
+            let currentLeftOverhang = baseLeftOverhang;
+            let currentRightOverhang = baseRightOverhang;
 
+            if (hasConsole && crown >= cStart && crown < (cStart + cCount)) {
+                const stepIdx = crown - cStart + 1;
+                currentLeftOverhang += stepIdx * cLeftStep;
+                currentRightOverhang += stepIdx * cRightStep;
+            }
+
+            // Абсолютные границы бруса на холсте
+            let currentLineLeftBound = maxLOverhang - currentLeftOverhang;
+            let currentLineRightBound = maxLOverhang + wLenClean + currentRightOverhang;
+
+            // Усечение под стропила, если это зона фронтона
             if (crown > wCrownsNormal && wType !== 'normal') {
                 const heightInsideGable = (crown - wCrownsNormal - 0.5) * bH;
                 let lateralCutback = heightInsideGable * Math.tan((90 - roofAngleDeg) * Math.PI / 180);
-                if (maxGableH > 0 && heightInsideGable > maxGableH) {
-                    lateralCutback = wLenTotal; 
-                }
+                if (maxGableH > 0 && heightInsideGable > maxGableH) lateralCutback = wLenCanvasMax;
 
                 if (wType === 'gable') {
-                    currentLineLeftBound = Math.min(wLenTotal / 2, lateralCutback);
-                    currentLineRightBound = Math.max(wLenTotal / 2, wLenTotal - lateralCutback);
+                    const centerAbs = maxLOverhang + (wLenClean / 2);
+                    const halfWidthAtHeight = (wLenCanvasMax / 2) * (1 - (heightInsideGable / (maxGableH || totalWallHeight)));
+                    currentLineLeftBound = Math.max(currentLineLeftBound, centerAbs - halfWidthAtHeight);
+                    currentLineRightBound = Math.min(currentLineRightBound, centerAbs + halfWidthAtHeight);
                 } else if (wType === 'shed') {
-                    currentLineLeftBound = 0;
-                    currentLineRightBound = Math.max(0, wLenTotal - lateralCutback);
+                    currentLineRightBound = Math.max(currentLineLeftBound, currentLineRightBound - lateralCutback);
                 }
             }
 
             const activeRowLength = currentLineRightBound - currentLineLeftBound;
-            if (activeRowLength <= 0.05) continue; 
+            if (activeRowLength <= 0.05) continue;
 
-            let validCupsInRow = absoluteCups.filter(cup => cup >= currentLineLeftBound && cup <= currentLineRightBound);
+            // Ограничение чаш стыковки в пределах живой длины текущего бруса
+            let rowCups = [maxLOverhang, maxLOverhang + wLenClean];
+            intersections.forEach(x => rowCups.push(x + maxLOverhang));
+            let validCupsInRow = rowCups.filter(cup => cup >= currentLineLeftBound && cup <= currentLineRightBound);
             if (!validCupsInRow.includes(currentLineLeftBound)) validCupsInRow.unshift(currentLineLeftBound);
             if (!validCupsInRow.includes(currentLineRightBound)) validCupsInRow.push(currentLineRightBound);
-            validCupsInRow.sort((a, b) => a - b);
+            validCupsInRow = [...new Set(validCupsInRow)].sort((a, b) => a - b);
 
             let allowedSplicePoints = (crown % 2 === 0) ? [...validCupsInRow].reverse() : [...validCupsInRow];
             let currentLineSegments = [];
@@ -242,13 +268,10 @@ function calculateCutting() {
                 let spliceX = segmentStartX;
                 for (let cup of allowedSplicePoints) {
                     if (cup > segmentStartX && cup - segmentStartX <= usableStockLength) {
-                        spliceX = cup;
-                        if (crown % 2 !== 0) break; 
+                        spliceX = cup; if (crown % 2 !== 0) break;
                     }
                 }
-                if (spliceX === segmentStartX) {
-                    spliceX = segmentStartX + usableStockLength;
-                }
+                if (spliceX === segmentStartX) spliceX = segmentStartX + usableStockLength;
                 currentLineSegments.push({ start: segmentStartX, end: spliceX });
                 segmentStartX = spliceX;
             }
@@ -256,67 +279,43 @@ function calculateCutting() {
 
             let activeOps = openings.filter(op => crown >= op.vStart && crown <= op.vEnd);
             activeOps.sort((a, b) => a.start - b.start);
-
             const color = colors[crown % colors.length];
 
             currentLineSegments.forEach(segment => {
                 let currentX = segment.start;
 
                 const registerAndRenderPart = (startLoc, endLoc) => {
-                    const partLen = endLoc - startLoc;
-                    if (partLen <= 0.005) return; 
-                    
+                    const partLen = endLoc - startLoc; if (partLen <= 0.005) return;
                     const roundedLen = parseFloat(partLen.toFixed(2));
-                    const pMark = `${wLabel}.В-${crown}`;
-                    
-                    flatParts.push({ mark: pMark, length: roundedLen, color: color });
+                    flatParts.push({ mark: `${wLabel}.В-${crown}`, length: roundedLen, color: color });
 
                     const partDiv = document.createElement('div');
                     partDiv.className = 'wall-canvas-part';
-                    partDiv.style.left = `${(startLoc / wLenTotal) * 100}%`;
-                    partDiv.style.width = `${(partLen / wLenTotal) * 100}%`;
+                    partDiv.style.left = `${(startLoc / wLenCanvasMax) * 100}%`;
+                    partDiv.style.width = `${(partLen / wLenCanvasMax) * 100}%`;
                     partDiv.style.backgroundColor = color;
                     partDiv.innerText = `${crown}в:${roundedLen}м`;
-                    partDiv.title = `Венец ${crown}, Деталь: ${roundedLen}м`;
                     crownDiv.appendChild(partDiv);
                 };
 
                 activeOps.forEach(op => {
-                    if (op.start > currentX && op.start < segment.end) {
-                        registerAndRenderPart(currentX, Math.min(op.start, segment.end));
-                    }
-                    if (op.end > currentX && op.start < segment.end) {
-                        currentX = Math.max(currentX, Math.min(op.end, segment.end));
-                    }
+                    if (op.start > currentX && op.start < segment.end) registerAndRenderPart(currentX, Math.min(op.start, segment.end));
+                    if (op.end > currentX && op.start < segment.end) currentX = Math.max(currentX, Math.min(op.end, segment.end));
                 });
-
-                if (segment.end > currentX) {
-                    registerAndRenderPart(currentX, segment.end);
-                }
+                if (segment.end > currentX) registerAndRenderPart(currentX, segment.end);
             });
         }
     });
-    if (!validWallFound || flatParts.length === 0) {
-        alert('Добавьте хотя бы одну стену с корректными размерами!');
-        return;
-    }
-
+    if (!validWallFound || flatParts.length === 0) { alert('Добавьте хотя бы одну стену с корректными размерами!'); return; }
     flatParts.sort((a, b) => b.length - a.length);
-    let boards = []; 
+    let boards = [];
 
     flatParts.forEach(part => {
         let placed = false;
         for (let i = 0; i < boards.length; i++) {
-            if (boards[i].remaining >= part.length) {
-                boards[i].parts.push(part);
-                boards[i].remaining -= part.length;
-                placed = true;
-                break;
-            }
+            if (boards[i].remaining >= part.length) { boards[i].parts.push(part); boards[i].remaining -= part.length; placed = true; break; }
         }
-        if (!placed) {
-            boards.push({ remaining: usableStockLength - part.length, parts: [part] });
-        }
+        if (!placed) boards.push({ remaining: usableStockLength - part.length, parts: [part] });
     });
 
     const sectionArea = bW * bH; 
@@ -330,61 +329,35 @@ function calculateCutting() {
     document.getElementById('r-pcs').innerText = boards.length;
     document.getElementById('r-waste').innerText = wastePercent.toFixed(1);
 
-    const mapContainer = document.getElementById('cutting-map-container');
-    mapContainer.innerHTML = ''; 
+    const mapContainer = document.getElementById('cutting-map-container'); mapContainer.innerHTML = '';
 
     boards.forEach((board, idx) => {
-        const row = document.createElement('div');
-        row.className = 'map-row';
-
-        const indexDiv = document.createElement('div');
-        indexDiv.className = 'map-index';
-        indexDiv.innerText = `#${idx + 1}`;
-        row.appendChild(indexDiv);
-
-        const bar = document.createElement('div');
-        bar.className = 'map-visual-bar';
-        let specLabels = []; 
+        const row = document.createElement('div'); row.className = 'map-row';
+        const indexDiv = document.createElement('div'); indexDiv.className = 'map-index'; indexDiv.innerText = `#${idx + 1}`; row.appendChild(indexDiv);
+        const bar = document.createElement('div'); bar.className = 'map-visual-bar';
+        let specLabels = [];
 
         if (trimM > 0) {
             const trimPct = (trimM / stockLength) * 100;
-            const trimDiv = document.createElement('div');
-            trimDiv.className = 'map-trim';
-            trimDiv.style.width = `${trimPct}%`;
-            bar.appendChild(trimDiv);
+            const trimDiv = document.createElement('div'); trimDiv.className = 'map-trim'; trimDiv.style.width = `${trimPct}%`; bar.appendChild(trimDiv);
         }
 
         board.parts.forEach(part => {
             const partPct = (part.length / stockLength) * 100;
-            const partDiv = document.createElement('div');
-            partDiv.className = 'map-part';
-            partDiv.style.width = `${partPct}%`;
-            partDiv.style.backgroundColor = part.color;
-            partDiv.innerText = part.mark;
-            bar.appendChild(partDiv);
+            const partDiv = document.createElement('div'); partDiv.className = 'map-part'; partDiv.style.width = `${partPct}%`; partDiv.style.backgroundColor = part.color; partDiv.innerText = part.mark; bar.appendChild(partDiv);
             specLabels.push(`${part.mark}(${part.length.toFixed(2)}м)`);
         });
 
         const actualWaste = stockLength - (stockLength - board.remaining - trimM) - trimM;
         if (actualWaste > 0.001) {
             const wastePct = (actualWaste / stockLength) * 100;
-            const wasteDiv = document.createElement('div');
-            wasteDiv.className = 'map-waste';
-            wasteDiv.style.width = `${wastePct}%`;
-            wasteDiv.innerText = actualWaste.toFixed(2);
-            bar.appendChild(wasteDiv);
+            const wasteDiv = document.createElement('div'); wasteDiv.className = 'map-waste'; wasteDiv.style.width = `${wastePct}%`; wasteDiv.innerText = actualWaste.toFixed(2); bar.appendChild(wasteDiv);
             specLabels.push(`ост.${actualWaste.toFixed(2)}м`);
         }
 
         row.appendChild(bar);
-
-        const specDiv = document.createElement('div');
-        specDiv.className = 'map-spec-text';
-        specDiv.innerText = `[Торц.] ` + specLabels.join(' + ');
-        row.appendChild(specDiv);
-
+        const specDiv = document.createElement('div'); specDiv.className = 'map-spec-text'; specDiv.innerText = `[Торц.] ` + specLabels.join(' + '); row.appendChild(specDiv);
         mapContainer.appendChild(row);
     });
-
     document.getElementById('r-block').style.display = 'block';
 }
