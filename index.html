@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Инженерный калькулятор раскроя бруса и порядовки</title>
+    <title>Инженерный CAD-калькулятор стенового комплекта</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="box">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 30px;">
-        <h1 style="border: none; margin: 0; padding: 0;">Производственный калькулятор стенового комплекта</h1>
+        <h1 style="border: none; margin: 0; padding: 0;">Инженерный CAD-калькулятор деревянных конструкций</h1>
         <button type="button" class="btn-pdf" id="pdf-btn" style="padding: 10px 20px; background: #0f172a; color: white;">📥 Скачать отчет PDF</button>
     </div>
     
@@ -22,37 +22,52 @@
         <div class="item"><label>Припуск на торцовку (мм)</label><input type="number" id="trim" value="50"></div>
     </div>
 
-    <h2>Параметры стен, перерубов и выпусков</h2>
+    <h2>Параметры стен, перерубов и конструктивных балок</h2>
     <div id="w-container">
+        <!-- Стена №1 со всеми новыми инженерными узлами -->
         <div class="wall" id="wall-id-1">
             <div class="wall-head">
                 <span class="wall-title">Стена №1</span>
                 <button type="button" class="btn-red del-w-btn">Удалить стену</button>
             </div>
             <div class="row">
-                <div class="item" style="flex: 2;"><label>Длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
-                <div class="item"><label>Базовый выпуск левый (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
-                <div class="item"><label>Базовый выпуск правый (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
+                <div class="item" style="flex: 1.5;"><label>Длина по осям (м)</label><input type="number" class="w-len" value="8.00" step="0.01"></div>
+                <div class="item"><label>Выпуск левый (мм)</label><input type="number" class="w-left-overhang" value="200"></div>
+                <div class="item"><label>Выпуск правый (мм)</label><input type="number" class="w-right-overhang" value="200"></div>
                 <div class="item"><label>Венцов прямоугольных</label><input type="number" class="w-crowns" value="16"></div>
-            </div>
-            <div class="row" style="margin-top: 10px;">
-                <div class="item" style="flex: 2;"><label>Пересечения / Оси смежных стен (м от угла)</label><input type="text" class="w-intersections" value="4.00"></div>
-                <div class="item" style="flex: 1;"><label>Декоративный зарез торцов</label>
-                    <select class="w-overhang-style" onchange="document.getElementById('calc-btn').click();">
-                        <option value="straight">Прямой рез (классика)</option>
-                        <option value="rounded">Радиусный (круглый)</option>
-                        <option value="bevel">Косой рез (под 45°)</option>
+                <div class="item" style="flex: 1.2;"><label>Стартовый ряд</label>
+                    <select class="w-start-row">
+                        <option value="0">Целый венец (Ряд 1)</option>
+                        <option value="0.5">Полувенец (Смещение +0.5)</option>
                     </select>
                 </div>
             </div>
             
-            <!-- Кнопки надстроек -->
-            <div style="margin-top: 15px; margin-bottom: 5px; display: flex; gap: 10px;">
-                <button type="button" class="btn-blue add-gable-trigger-btn" style="background: #475569; font-size: 13px; padding: 8px 16px;">+ Надстроить фронтон</button>
-                <button type="button" class="btn-blue add-console-trigger-btn" style="background: #64748b; font-size: 13px; padding: 8px 16px;">+ Консольные выпуски под кровлю</button>
+            <div class="row" style="margin-top: 10px;">
+                <div class="item" style="flex: 2;"><label>Пересечения / Оси чаш (м от угла через запятую)</label><input type="text" class="w-intersections" value="4.00"></div>
+                <div class="item" style="flex: 1;"><label>Тип сопряжения углов</label>
+                    <select class="w-corner-type">
+                        <option value="corner">Угловой переруб (с остатком)</option>
+                        <option value="t-joint">Т-образное пересечение</option>
+                    </select>
+                </div>
+                <div class="item" style="flex: 1;"><label>Декоративный зарез</label>
+                    <select class="w-overhang-style">
+                        <option value="straight">Прямой рез</option>
+                        <option value="rounded">Радиусный</option>
+                        <option value="bevel">Косой рез (45°)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Панель надстроек -->
+            <div style="margin-top: 15px; margin-bottom: 5px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn-blue add-gable-trigger-btn" style="background: #475569; font-size: 13px; padding: 8px 16px;">+ Фронтон</button>
+                <button type="button" class="btn-blue add-console-trigger-btn" style="background: #64748b; font-size: 13px; padding: 8px 16px;">+ Консоли свеса</button>
+                <button type="button" class="btn-blue add-purlin-trigger-btn" style="background: #0284c7; font-size: 13px; padding: 8px 16px;">+ Коньковые / Продольные слеги</button>
             </div>
 
-            <!-- Блок фронтона (скрыт по умолчанию) -->
+            <!-- Блок фронтона -->
             <div class="gable-fields-block" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px;" data-has-gable="false">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Геометрия фронтонной части</h5>
@@ -71,7 +86,7 @@
                 </div>
             </div>
 
-            <!-- НОВЫЙ БЛОК: Консольные выпуски под кровлю (скрыт по умолчанию) -->
+            <!-- Блок консольных выпусков -->
             <div class="console-fields-block" style="display: none; background: #f0f4f8; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 15px;" data-has-console="false">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Параметры консольных выносов под свесы крыши</h5>
@@ -80,13 +95,32 @@
                 <div class="row">
                     <div class="item"><label>С какого венца начать</label><input type="number" class="w-console-start" value="14"></div>
                     <div class="item"><label>Сколько венцов выпуска</label><input type="number" class="w-console-count" value="3"></div>
-                    <div class="item"><label>Шаг прироста левого выноса (мм/венец)</label><input type="number" class="w-console-left-step" value="150"></div>
-                    <div class="item"><label>Шаг прироста правого выноса (мм/венец)</label><input type="number" class="w-console-right-step" value="150"></div>
+                    <div class="item"><label>Длина левого выноса (мм)</label><input type="number" class="w-console-left-step" value="500"></div>
+                    <div class="item"><label>Длина правого выноса (мм)</label><input type="number" class="w-console-right-step" value="500"></div>
+                </div>
+            </div>
+
+            <!-- НОВЫЙ БЛОК: Продольные слеги и балки выноса крыльца -->
+            <div class="purlin-fields-block" style="display: none; background: #f0fdfa; padding: 20px; border-radius: 8px; border: 1px solid #99f6e4; margin-top: 15px;" data-has-purlin="false">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h5 style="margin: 0; font-size: 14px; color: #0f766e; font-weight: 700;">Коньковые балки и подстропильные слеги крыльца/террасы</h5>
+                    <button type="button" class="btn-red del-purlin-btn" style="padding: 4px 8px; font-size: 11px;">Удалить слеги</button>
+                </div>
+                <div class="row">
+                    <div class="item" style="flex: 1.5;"><label>Тип балки</label>
+                        <select class="w-purlin-type">
+                            <option value="ridge">Коньковая слега (Строго по центру)</option>
+                            <option value="porch">Подстропильная балка выноса крыльца</option>
+                        </select>
+                    </div>
+                    <div class="item"><label>Венец укладки (высота)</label><input type="number" class="w-purlin-crown" value="16"></div>
+                    <div class="item"><label>Вынос балки вперед (мм)</label><input type="number" class="w-purlin-front" value="1500"></div>
+                    <div class="item"><label>Заглубление в переруб (мм)</label><input type="number" class="w-purlin-depth" value="400"></div>
                 </div>
             </div>
 
             <div class="openings-section">
-                <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (включая окна фронтона):</h4>
+                <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (Окна / Двери):</h4>
                 <div class="openings-list">
                     <div class="opening-item row" style="margin-top:5px; background:#f0f2f1; padding:8px; border-radius:4px; gap: 10px;">
                         <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно 1 этаж"></div>
@@ -97,31 +131,3 @@
                         <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
                     </div>
                 </div>
-                <button type="button" class="btn-blue add-op-btn" style="background:#5c6bc0; font-size:12px; margin-top:5px;">+ Добавить проем</button>
-            </div>
-        </div>
-    </div>
-    
-    <button type="button" class="btn-blue" id="add-w-btn" style="margin-top: 20px;">+ Добавить стену</button>
-    <button type="button" class="btn-green" id="calc-btn">Сгенерировать порядовку и карту раскроя</button>
-
-    <div class="res" id="r-block">
-        <div id="pdf-content">
-            <h2 class="pdf-only-title" style="display: none; margin-top: 0; color: #0f172a;">Спецификация и карта линейного раскроя бруса</h2>
-            <div class="res-grid">
-                <div class="res-box">Чистый объем деталей<span id="r-v-net">0.00</span> м³</div>
-                <div class="res-box">Объем заготовок<span id="r-v-gross">0.00</span> м³</div>
-                <div class="res-box">Количество заготовок<span id="r-pcs">0</span> шт.</div>
-                <div class="res-box">Общий процент отходов<span id="r-waste">0.0</span> %</div>
-            </div>
-            <h3>2D-Развертка стен и осей чаш:</h3>
-            <div id="walls-preview-container" style="margin-bottom: 30px;"></div>
-            <h3>Карта линейного раскроя бруса:</h3>
-            <div id="cutting-map-container"></div>
-        </div>
-    </div>
-</div>
-
-<script src="script.js"></script>
-</body>
-</html>
