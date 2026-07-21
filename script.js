@@ -6,44 +6,57 @@ document.getElementById('add-w-btn').addEventListener('click', addWall);
 document.getElementById('calc-btn').addEventListener('click', calculateCutting);
 document.getElementById('pdf-btn').addEventListener('click', () => window.print());
 
+// Глобальное делегирование событий для карточек стен
 wContainer.addEventListener('click', function(e) {
     if (!e.target) return;
     
+    // Блок фронтона
     if (e.target.classList.contains('add-gable-trigger-btn')) {
         const wallNode = e.target.closest('.wall');
-        const gableBlock = wallNode.querySelector('.gable-fields-block');
-        if (gableBlock) { gableBlock.style.display = 'block'; e.target.style.display = 'none'; }
+        const block = wallNode.querySelector('.gable-fields-block');
+        if (block) { block.style.display = 'block'; e.target.style.display = 'none'; }
     }
-    
     if (e.target.classList.contains('del-gable-btn')) {
         const wallNode = e.target.closest('.wall');
-        const gableBlock = wallNode.querySelector('.gable-fields-block');
-        const addGableBtn = wallNode.querySelector('.add-gable-trigger-btn');
-        if (gableBlock && addGableBtn) { gableBlock.style.display = 'none'; addGableBtn.style.display = 'inline-flex'; }
+        const block = wallNode.querySelector('.gable-fields-block');
+        const btn = wallNode.querySelector('.add-gable-trigger-btn');
+        if (block && btn) { block.style.display = 'none'; btn.style.display = 'inline-flex'; }
     }
 
+    // Блок консольных выпусков
     if (e.target.classList.contains('add-console-trigger-btn')) {
         const wallNode = e.target.closest('.wall');
-        const consoleBlock = wallNode.querySelector('.console-fields-block');
-        if (consoleBlock) { consoleBlock.style.display = 'block'; e.target.style.display = 'none'; }
+        const block = wallNode.querySelector('.console-fields-block');
+        if (block) { block.style.display = 'block'; e.target.style.display = 'none'; }
     }
-    
     if (e.target.classList.contains('del-console-btn')) {
         const wallNode = e.target.closest('.wall');
-        const consoleBlock = wallNode.querySelector('.console-fields-block');
-        const addConsoleBtn = wallNode.querySelector('.add-console-trigger-btn');
-        if (consoleBlock && addConsoleBtn) { consoleBlock.style.display = 'none'; addConsoleBtn.style.display = 'inline-flex'; }
+        const block = wallNode.querySelector('.console-fields-block');
+        const btn = wallNode.querySelector('.add-console-trigger-btn');
+        if (block && btn) { block.style.display = 'none'; btn.style.display = 'inline-flex'; }
     }
 
+    // НОВЫЙ МЕТОД: Блок коньковых / продольных слег и балок крыльца
+    if (e.target.classList.contains('add-purlin-trigger-btn')) {
+        const wallNode = e.target.closest('.wall');
+        const block = wallNode.querySelector('.purlin-fields-block');
+        if (block) { block.style.display = 'block'; e.target.style.display = 'none'; }
+    }
+    if (e.target.classList.contains('del-purlin-btn')) {
+        const wallNode = e.target.closest('.wall');
+        const block = wallNode.querySelector('.purlin-fields-block');
+        const btn = wallNode.querySelector('.add-purlin-trigger-btn');
+        if (block && btn) { block.style.display = 'none'; btn.style.display = 'inline-flex'; }
+    }
+
+    // Удаление стены и управление проемами
     if (e.target.classList.contains('del-w-btn')) {
         const wallNode = e.target.closest('.wall'); if (wallNode) wallNode.remove();
     }
-
     if (e.target.classList.contains('add-op-btn')) {
         const wallNode = e.target.closest('.wall');
         const openingsList = wallNode.querySelector('.openings-list'); if (openingsList) addOpening(openingsList);
     }
-
     if (e.target.classList.contains('del-op-btn')) {
         const item = e.target.closest('.opening-item'); if (item) item.remove();
     }
@@ -57,16 +70,23 @@ function addWall() {
     newWall.removeAttribute('id');
     newWall.querySelector('.wall-title').innerText = 'Стена №' + wCount;
     
-    const addGableBtn = newWall.querySelector('.add-gable-trigger-btn');
-    const gableBlock = newWall.querySelector('.gable-fields-block');
-    if (addGableBtn && gableBlock) { addGableBtn.style.display = 'inline-flex'; gableBlock.style.display = 'none'; }
-
-    const addConsoleBtn = newWall.querySelector('.add-console-trigger-btn');
-    const consoleBlock = newWall.querySelector('.console-fields-block');
-    if (addConsoleBtn && consoleBlock) { addConsoleBtn.style.display = 'inline-flex'; consoleBlock.style.display = 'none'; }
+    // Сброс всех блоков настроек в исходное скрытое состояние
+    const selectors = [
+        ['.add-gable-trigger-btn', '.gable-fields-block'],
+        ['.add-console-trigger-btn', '.console-fields-block'],
+        ['.add-purlin-trigger-btn', '.purlin-fields-block']
+    ];
+    selectors.forEach(([btnClass, blockClass]) => {
+        const btn = newWall.querySelector(btnClass);
+        const block = newWall.querySelector(blockClass);
+        if (btn && block) { btn.style.display = 'inline-flex'; block.style.display = 'none'; }
+    });
 
     const openingsList = newWall.querySelector('.openings-list');
-    if (openingsList) { openingsList.innerHTML = ''; addOpening(openingsList); }
+    if (openingsList) {
+        openingsList.innerHTML = '';
+        addOpening(openingsList);
+    }
     wContainer.appendChild(newWall);
 }
 
@@ -74,11 +94,11 @@ function addOpening(container) {
     const div = document.createElement('div');
     div.className = 'opening-item row';
     div.innerHTML = `
-        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно фронтона"></div>
-        <div class="item"><label>От угла (м)</label><input type="number" class="op-start" value="3.25" step="0.01"></div>
+        <div class="item" style="flex: 1.5;"><label>Название</label><input type="text" class="op-name" value="Окно"></div>
+        <div class="item"><label>От угла (м)</label><input type="number" class="op-start" value="2.00" step="0.01"></div>
         <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
-        <div class="item"><label>От низа (м)</label><input type="number" class="op-bottom" value="3.20" step="0.01"></div>
-        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.00" step="0.01"></div>
+        <div class="item"><label>От низа (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
+        <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
         <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
     `;
     container.appendChild(div);
@@ -108,11 +128,19 @@ function calculateCutting() {
         const wLenClean = parseFloat(wallNode.querySelector('.w-len').value);
         const wCrownsNormal = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
         
+        // НОВЫЙ ПАРАМЕТР: Сдвиг по высоте на 0.5 венца для правильной перевязки углов и Т-пересечений
+        const wStartOffsetCrowns = parseFloat(wallNode.querySelector('.w-start-row').value) || 0;
+        const wCornerType = wallNode.querySelector('.w-corner-type').value;
+
         const gableBlock = wallNode.querySelector('.gable-fields-block');
         const hasGable = gableBlock && gableBlock.style.display === 'block';
 
         const consoleBlock = wallNode.querySelector('.console-fields-block');
         const hasConsole = consoleBlock && consoleBlock.style.display === 'block';
+
+        // НОВЫЙ БЛОК: Коньковые и продольные слеги выноса террасы/крыльца
+        const purlinBlock = wallNode.querySelector('.purlin-fields-block');
+        const hasPurlin = purlinBlock && purlinBlock.style.display === 'block';
 
         const wType = hasGable ? gableBlock.querySelector('.w-roof-type').value : 'normal';
         const wCrownsGable = hasGable ? (parseInt(gableBlock.querySelector('.w-gable-crowns').value) || 0) : 0;
@@ -137,11 +165,17 @@ function calculateCutting() {
 
         if (isNaN(wLenClean) || wLenClean <= 0 || wCrownsNormal <= 0) return;
 
+        // Расчет максимальных выпусков с учетом продольных коньковых слег и балок крыльца
         let maxLOverhang = Math.max(baseLeftOverhang, hasConsole ? cLeftLen : 0);
         let maxROverhang = Math.max(baseRightOverhang, hasConsole ? cRightLen : 0);
 
+        if (hasPurlin) {
+            const pFront = (parseFloat(purlinBlock.querySelector('.w-purlin-front').value) || 0) / 1000;
+            maxLOverhang = Math.max(maxLOverhang, pFront);
+        }
+
         const wLenCanvasMax = maxLOverhang + wLenClean + maxROverhang;
-        const totalWallHeight = wCrownsTotal * bH;
+        const totalWallHeight = (wCrownsTotal + wStartOffsetCrowns) * bH;
 
         const visualBlock = document.createElement('div');
         visualBlock.className = 'wall-visual-block';
@@ -149,7 +183,7 @@ function calculateCutting() {
         
         const visualTitle = document.createElement('div');
         visualTitle.className = 'wall-visual-title';
-        visualTitle.innerText = `Развертка стены №${wIdx + 1} (Венцов: ${wCrownsTotal}, Стяжные венцы по краям окон прорубаются вручную)`;
+        visualTitle.innerText = `Развертка стены №${wIdx + 1} (${wCornerType === 'corner' ? 'Угловой замок' : 'Т-переруб'}, Смещение: +${wStartOffsetCrowns}в.)`;
         visualBlock.appendChild(visualTitle);
 
         const canvas = document.createElement('div');
@@ -182,23 +216,18 @@ function calculateCutting() {
             if (!isNaN(opStartClean) && !isNaN(opWidth) && opWidth > 0 && opHeight > 0) {
                 const opStartAbs = opStartClean + leftBaseOffset;
                 const opTop = opBottom + opHeight; 
-                let vStart = Math.floor(opBottom / bH) + 1;
-                let vEnd = Math.ceil((opTop - 0.001) / bH);
+                let vStart = Math.floor((opBottom - (wStartOffsetCrowns * bH)) / bH) + 1;
+                let vEnd = Math.ceil((opTop - (wStartOffsetCrowns * bH) - 0.001) / bH);
                 vStart = Math.max(1, Math.min(wCrownsTotal, vStart));
                 vEnd = Math.max(1, Math.min(wCrownsTotal, vEnd));
 
-                // Запоминаем номера перевязочных венцов (крайний нижний и крайний верхний)
-                openings.push({ 
-                    name, start: opStartAbs, end: opStartAbs + opWidth, 
-                    vStart: vStart, vEnd: vEnd,
-                    tieBottom: vStart, tieTop: vEnd 
-                });
+                openings.push({ name, start: opStartAbs, end: opStartAbs + opWidth, vStart: vStart, vEnd: vEnd, tieBottom: vStart, tieTop: vEnd });
 
                 const opDiv = document.createElement('div');
                 opDiv.className = 'wall-canvas-opening';
                 opDiv.style.left = `${(opStartAbs / wLenCanvasMax) * 100}%`;
                 opDiv.style.width = `${(opWidth / wLenCanvasMax) * 100}%`;
-                opDiv.style.bottom = `${(opBottom / totalWallHeight) * 100}%`;
+                opDiv.style.bottom = `${((opBottom) / totalWallHeight) * 100}%`;
                 opDiv.style.height = `${(opHeight / totalWallHeight) * 100}%`;
                 opDiv.innerText = name;
                 canvas.appendChild(opDiv);
@@ -207,12 +236,34 @@ function calculateCutting() {
         for (let crown = 1; crown <= wCrownsTotal; crown++) {
             const crownDiv = document.createElement('div');
             crownDiv.className = 'wall-canvas-crown';
-            crownDiv.style.bottom = `${((crown - 1) * bH / totalWallHeight) * 100}%`;
+            // Корректируем высотное положение ряда на холсте с учетом стартового полувенца
+            const absoluteRowBottom = ((crown - 1) + wStartOffsetCrowns) * bH;
+            crownDiv.style.bottom = `${(absoluteRowBottom / totalWallHeight) * 100}%`;
             crownDiv.style.height = `${(bH / totalWallHeight) * 100}%`;
             canvas.appendChild(crownDiv);
 
             let currentLeftOverhang = baseLeftOverhang;
             let currentRightOverhang = baseRightOverhang;
+
+            // Если венец совпал с высотой укладки коньковой слеги или балки крыльца
+            if (hasPurlin) {
+                const pCrown = parseInt(purlinBlock.querySelector('.w-purlin-crown').value) || 0;
+                const pFront = (parseFloat(purlinBlock.querySelector('.w-purlin-front').value) || 0) / 1000;
+                const pDepth = (parseFloat(purlinBlock.querySelector('.w-purlin-depth').value) || 0) / 1000;
+                const pType = purlinBlock.querySelector('.w-purlin-type').value;
+
+                if (crown === pCrown) {
+                    if (pType === 'ridge') {
+                        // Коньковый прогон: брус увеличивается симметрично с выносом вперед под свес
+                        currentLeftOverhang = pFront;
+                        currentRightOverhang = pFront;
+                    } else {
+                        // Подстропильная балка крыльца: выдвигается вперед (влево) и жестко заглубляется в стену
+                        currentLeftOverhang = pFront;
+                        currentRightOverhang = -pDepth; // Отрицательное значение сокращает брус до переруба
+                    }
+                }
+            }
 
             if (hasConsole && crown >= cStart && crown < (cStart + cCount)) {
                 currentLeftOverhang = cLeftLen;
@@ -222,6 +273,7 @@ function calculateCutting() {
             let currentLineLeftBound = maxLOverhang - currentLeftOverhang;
             let currentLineRightBound = maxLOverhang + wLenClean + currentRightOverhang;
 
+            // Тригонометрическое усечение под скаты кровли
             if (crown > wCrownsNormal && wType !== 'normal') {
                 const heightInsideGable = (crown - wCrownsNormal - 0.5) * bH;
                 let lateralCutback = heightInsideGable * Math.tan((90 - roofAngleDeg) * Math.PI / 180);
@@ -240,20 +292,19 @@ function calculateCutting() {
             const activeRowLength = currentLineRightBound - currentLineLeftBound;
             if (activeRowLength <= 0.05) continue;
 
-            // Находим проемы, пересекающие данный венец
             let activeOps = openings.filter(op => crown >= op.vStart && crown <= op.vEnd);
-            
-            // Фильтруем проемы: если текущий венец является ПЕРЕВЯЗОЧНЫМ (самый низ или самый верх окна),
-            // мы исключаем его из списка разрезающих. Брус пойдет сквозь него!
             let cuttingOps = activeOps.filter(op => crown !== op.tieBottom && crown !== op.tieTop);
             cuttingOps.sort((a, b) => a.start - b.start);
 
-            let validCupsInRow = [];
             let rowCups = [maxLOverhang, maxLOverhang + wLenClean];
             intersections.forEach(x => rowCups.push(x + maxLOverhang));
             
-            // Если венец не разрезается окном (или он перевязочный), чаши строятся стандартно
-            validCupsInRow = rowCups.filter(cup => cup >= currentLineLeftBound && cup <= currentLineRightBound);
+            // Логика Т-образного переруба: если тип сопряжения Т-образный, брус на нечетных рядах стыкуется глухо
+            if (wCornerType === 't-joint' && crown % 2 !== 0) {
+                rowCups = rowCups.filter(cup => cup !== maxLOverhang && cup !== (maxLOverhang + wLenClean));
+            }
+
+            let validCupsInRow = rowCups.filter(cup => cup >= currentLineLeftBound && cup <= currentLineRightBound);
             if (!validCupsInRow.includes(currentLineLeftBound)) validCupsInRow.unshift(currentLineLeftBound);
             if (!validCupsInRow.includes(currentLineRightBound)) validCupsInRow.push(currentLineRightBound);
             validCupsInRow = [...new Set(validCupsInRow)].sort((a, b) => a - b);
@@ -277,7 +328,6 @@ function calculateCutting() {
 
             const color = colors[crown % colors.length];
 
-            // Нарезаем брусья с учетом выборочного пропуска перевязочных рядов окон
             currentLineSegments.forEach(segment => {
                 let currentX = segment.start;
 
@@ -295,7 +345,6 @@ function calculateCutting() {
                     crownDiv.appendChild(partDiv);
                 };
 
-                // Прогоняем только через те проемы, которые ОБЯЗАНЫ разрезать венец (середина окна)
                 cuttingOps.forEach(op => {
                     if (op.start > currentX && op.start < segment.end) registerAndRenderPart(currentX, Math.min(op.start, segment.end));
                     if (op.end > currentX && op.start < segment.end) currentX = Math.max(currentX, Math.min(op.end, segment.end));
