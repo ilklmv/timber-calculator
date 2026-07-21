@@ -25,7 +25,7 @@
 
     <h2>Параметры стен, перерубов и конструктивных балок</h2>
     <div id="w-container">
-        <!-- Первая стена (очищена от жестких ID для стабильности клонирования) -->
+        <!-- Стена №1 (Базовая конструкция) -->
         <div class="wall">
             <div class="wall-head">
                 <span class="wall-title">Стена №1</span>
@@ -55,12 +55,11 @@
                 <div class="item" style="flex: 1;"><label>Декоративный зарез</label>
                     <select class="w-overhang-style">
                         <option value="straight">Прямой рез</option>
-                        <option value="rounded">Радиусный</option>
+                        <option value="rounded">Radiусный</option>
                         <option value="bevel">Косой рез (45°)</option>
                     </select>
                 </div>
             </div>
-            
             <!-- Панель надстроек -->
             <div style="margin-top: 15px; margin-bottom: 5px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn-blue add-gable-trigger-btn" style="background: #475569; font-size: 13px; padding: 8px 16px;">+ Фронтон</button>
@@ -68,7 +67,7 @@
                 <button type="button" class="btn-blue add-purlin-trigger-btn" style="background: #0284c7; font-size: 13px; padding: 8px 16px;">+ Коньковые / Продольные слеги</button>
             </div>
 
-            <!-- Блок фронтона (скрыт по умолчанию) -->
+            <!-- Блок фронтона -->
             <div class="gable-fields-block" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Геометрия фронтонной части</h5>
@@ -87,7 +86,7 @@
                 </div>
             </div>
 
-            <!-- Блок консольных выпусков (скрыт по умолчанию) -->
+            <!-- Блок консольных выпусков -->
             <div class="console-fields-block" style="display: none; background: #f0f4f8; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Параметры консольных выносов под свесы крыши</h5>
@@ -101,16 +100,16 @@
                 </div>
             </div>
 
-            <!-- Блок коньковых / продольных слег (скрыт по умолчанию) -->
+            <!-- Блок коньковых / продольных слег -->
             <div class="purlin-fields-block" style="display: none; background: #f0fdfa; padding: 20px; border-radius: 8px; border: 1px solid #99f6e4; margin-top: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h5 style="margin: 0; font-size: 14px; color: #0f766e; font-weight: 700;">Коньковые балки и подстропильные слеги крыльца/террасы</h5>
+                    <h5 style="margin: 0; font-size: 14px; color: #0f766e; font-weight: 700;">Коньковые балки и продольные слеги (Выносы под крыльцо/террасу)</h5>
                     <button type="button" class="btn-red del-purlin-btn" style="padding: 4px 8px; font-size: 11px;">Удалить слеги</button>
                 </div>
                 <div class="row">
                     <div class="item" style="flex: 1.5;"><label>Тип балки</label>
                         <select class="w-purlin-type">
-                            <option value="ridge">Коньковая слега (Строго по центру)</option>
+                            <option value="ridge">Коньковая слега (По центру здания)</option>
                             <option value="porch">Подстропильная балка выноса крыльца</option>
                         </select>
                     </div>
@@ -129,3 +128,38 @@
                         <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
                         <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
                         <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
+                        <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
+                    </div>
+                </div>
+                <button type="button" class="btn-blue add-op-btn" style="background:#5c6bc0; font-size:12px; margin-top:5px;">+ Добавить проем</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Добавление новой стены -->
+    <div style="margin-top: 25px; margin-bottom: 25px;">
+        <button type="button" class="btn-blue" id="add-w-btn" style="padding: 14px 28px; font-size: 15px;">+ Добавить еще одну стену</button>
+    </div>
+    
+    <button type="button" class="btn-green" id="calc-btn">Сгенерировать порядовку и карту раскроя</button>
+
+    <div class="res" id="r-block">
+        <div id="pdf-content">
+            <h2 class="pdf-only-title" style="display: none; margin-top: 0; color: #0f172a;">Спецификация и карта линейного раскроя бруса</h2>
+            <div class="res-grid">
+                <div class="res-box">Чистый объем деталей<span id="r-v-net">0.00</span> м³</div>
+                <div class="res-box">Объем заготовок<span id="r-v-gross">0.00</span> м³</div>
+                <div class="res-box">Количество заготовок<span id="r-pcs">0</span> шт.</div>
+                <div class="res-box">Общий процент отходов<span id="r-waste">0.0</span> %</div>
+            </div>
+            <h3>2D-Развертка стен, осей чаш и коньковых слег:</h3>
+            <div id="walls-preview-container" style="margin-bottom: 30px;"></div>
+            <h3>Карта линейного раскроя бруса:</h3>
+            <div id="cutting-map-container"></div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
