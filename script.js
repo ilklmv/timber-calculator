@@ -1,3 +1,11 @@
+---
+
+### ⚙️ Скрипты управления (`script.js`)
+*Полностью очистите `script.js` на GitHub и поочередно скопируйте в него блоки с 1 по 5.*
+
+#### 📥 Блок 1 из 5: Безопасный глобальный перехватчик кликов
+
+```javascript
 let wCount = 1;
 const wContainer = document.getElementById('w-container');
 const colors = ['#2ecc71', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#e74c3c', '#f1c40f', '#16a085', '#27ae60', '#2980b9'];
@@ -7,7 +15,7 @@ document.getElementById('add-w-btn').addEventListener('click', addWall);
 document.getElementById('calc-btn').addEventListener('click', calculateCutting);
 document.getElementById('pdf-btn').addEventListener('click', () => window.print());
 
-// Глобальный перехватчик событий клика (делегирование)
+// Перехватчик событий клика (делегирование)
 wContainer.addEventListener('click', function(e) {
     if (!e.target) return;
     const wallNode = e.target.closest('.wall');
@@ -35,7 +43,7 @@ wContainer.addEventListener('click', function(e) {
         if (block && btn) { block.style.display = 'none'; btn.style.display = 'inline-flex'; }
     }
 
-    // Переключатель блока Слеги/Конька
+    // ОТДЕЛЬНОЕ СОБЫТИЕ: Переключатель блока Слеги/Конька
     if (e.target.classList.contains('add-purlin-trigger-btn')) {
         const block = wallNode.querySelector('.purlin-fields-block');
         if (block) { block.style.display = 'block'; e.target.style.display = 'none'; }
@@ -121,7 +129,7 @@ function calculateCutting() {
         const wCornerType = wallNode.querySelector('.w-corner-type').value;
         const overhangStyle = wallNode.querySelector('.w-overhang-style').value;
 
-        // ИСПРАВЛЕНО: Безопасное чтение состояния блоков (скрыт/показан)
+        // Отказоустойчивое чтение: если блок скрыт, подставляем false
         const gableBlock = wallNode.querySelector('.gable-fields-block');
         const hasGable = gableBlock && gableBlock.style.display === 'block';
 
@@ -132,8 +140,7 @@ function calculateCutting() {
         const hasPurlin = purlinBlock && purlinBlock.style.display === 'block';
 
         const wType = hasGable ? gableBlock.querySelector('.w-roof-type').value : 'normal';
-        const wCrownsGable = hasGable ? (parseInt(gableBlock.querySelector('.w-gable-crowns').value) || 0) : 0;
-        const wCrownsTotal = wCrownsNormal + wCrownsGable;
+        const wCrownsTotal = wCrownsNormal + (hasGable ? (parseInt(gableBlock.querySelector('.w-gable-crowns').value) || 0) : 0);
 
         const baseLeftOverhang = (parseFloat(wallNode.querySelector('.w-left-overhang').value) || 0) / 1000;
         const baseRightOverhang = (parseFloat(wallNode.querySelector('.w-right-overhang').value) || 0) / 1000;
@@ -170,7 +177,7 @@ function calculateCutting() {
         
         const visualTitle = document.createElement('div');
         visualTitle.className = 'wall-visual-title';
-        visualTitle.innerText = `Развертка стены №${wIdx + 1} (${wCornerType === 'corner' ? 'Угловой замок' : 'Т-переруб'})`;
+        visualTitle.innerText = `Развертка стены №${wIdx + 1} (${wCornerType === 'corner' ? 'Угловой замок' : 'Т-переруб'}, Смещение +${wStartOffsetCrowns}в.)`;
         visualBlock.appendChild(visualTitle);
 
         const canvas = document.createElement('div');
@@ -213,7 +220,7 @@ function calculateCutting() {
                 opDiv.className = 'wall-canvas-opening';
                 opDiv.style.left = `${(opStartAbs / wLenCanvasMax) * 100}%`;
                 opDiv.style.width = `${(opWidth / wLenCanvasMax) * 100}%`;
-                opDiv.style.bottom = `${(opBottom / totalWallHeight) * 100}%`;
+                opDiv.style.bottom = `${((opBottom) / totalWallHeight) * 100}%`;
                 opDiv.style.height = `${(opHeight / totalWallHeight) * 100}%`;
                 opDiv.innerText = name;
                 canvas.appendChild(opDiv);
