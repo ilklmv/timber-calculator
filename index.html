@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Инженерный CAD-калькулятор стенового комплекта</title>
+    <title>Инженерный CAD-калькулятор деревянных конструкций</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="box">
+    <!-- Шапка сайта с постоянной кнопкой PDF -->
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 30px;">
-        <h1 style="border: none; margin: 0; padding: 0;">Инженерный CAD-калькулятор деревянных конструкций</h1>
+        <h1 style="border: none; margin: 0; padding: 0; font-size: 24px; font-weight: 800;">Инженерный CAD-калькулятор деревянных конструкций</h1>
         <button type="button" class="btn-pdf" id="pdf-btn" style="padding: 10px 20px; background: #0f172a; color: white;">📥 Скачать отчет PDF</button>
     </div>
     
@@ -24,8 +25,8 @@
 
     <h2>Параметры стен, перерубов и конструктивных балок</h2>
     <div id="w-container">
-        <!-- Стена №1 со всеми новыми инженерными узлами -->
-        <div class="wall" id="wall-id-1">
+        <!-- Первая стена (очищена от жестких ID для стабильности клонирования) -->
+        <div class="wall">
             <div class="wall-head">
                 <span class="wall-title">Стена №1</span>
                 <button type="button" class="btn-red del-w-btn">Удалить стену</button>
@@ -67,8 +68,8 @@
                 <button type="button" class="btn-blue add-purlin-trigger-btn" style="background: #0284c7; font-size: 13px; padding: 8px 16px;">+ Коньковые / Продольные слеги</button>
             </div>
 
-            <!-- Блок фронтона -->
-            <div class="gable-fields-block" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px;" data-has-gable="false">
+            <!-- Блок фронтона (скрыт по умолчанию) -->
+            <div class="gable-fields-block" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Геометрия фронтонной части</h5>
                     <button type="button" class="btn-red del-gable-btn" style="padding: 4px 8px; font-size: 11px;">Удалить фронтон</button>
@@ -86,8 +87,8 @@
                 </div>
             </div>
 
-            <!-- Блок консольных выпусков -->
-            <div class="console-fields-block" style="display: none; background: #f0f4f8; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 15px;" data-has-console="false">
+            <!-- Блок консольных выпусков (скрыт по умолчанию) -->
+            <div class="console-fields-block" style="display: none; background: #f0f4f8; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h5 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">Параметры консольных выносов под свесы крыши</h5>
                     <button type="button" class="btn-red del-console-btn" style="padding: 4px 8px; font-size: 11px;">Удалить выпуски</button>
@@ -100,8 +101,8 @@
                 </div>
             </div>
 
-            <!-- НОВЫЙ БЛОК: Продольные слеги и балки выноса крыльца -->
-            <div class="purlin-fields-block" style="display: none; background: #f0fdfa; padding: 20px; border-radius: 8px; border: 1px solid #99f6e4; margin-top: 15px;" data-has-purlin="false">
+            <!-- Блок коньковых / продольных слег (скрыт по умолчанию) -->
+            <div class="purlin-fields-block" style="display: none; background: #f0fdfa; padding: 20px; border-radius: 8px; border: 1px solid #99f6e4; margin-top: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h5 style="margin: 0; font-size: 14px; color: #0f766e; font-weight: 700;">Коньковые балки и подстропильные слеги крыльца/террасы</h5>
                     <button type="button" class="btn-red del-purlin-btn" style="padding: 4px 8px; font-size: 11px;">Удалить слеги</button>
@@ -128,6 +129,3 @@
                         <div class="item"><label>Ширина (м)</label><input type="number" class="op-width" value="1.50" step="0.01"></div>
                         <div class="item"><label>От низа стены (м)</label><input type="number" class="op-bottom" value="0.90" step="0.01"></div>
                         <div class="item"><label>Высота (м)</label><input type="number" class="op-height" value="1.20" step="0.01"></div>
-                        <div style="display:flex; align-items:flex-end;"><button type="button" class="btn-red del-op-btn" style="padding: 7px 10px;">✕</button></div>
-                    </div>
-                </div>
