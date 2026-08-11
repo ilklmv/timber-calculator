@@ -1,11 +1,3 @@
----
-
-### ⚙️ Скрипты управления (`script.js`)
-*Полностью очистите `script.js` на GitHub и поочередно скопируйте в него блоки с 1 по 5.*
-
-#### 📥 Блок 1 из 5: Безопасный глобальный перехватчик кликов
-
-```javascript
 let wCount = 1;
 const wContainer = document.getElementById('w-container');
 const colors = ['#2ecc71', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#e74c3c', '#f1c40f', '#16a085', '#27ae60', '#2980b9'];
