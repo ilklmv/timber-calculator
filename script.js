@@ -4,16 +4,18 @@ const colors = ['#2ecc71', '#3498db', '#9b59b6', '#34495e', '#1abc9c', '#e74c3c'
 
 // Инициализация базовых кнопок приложения
 document.getElementById('add-w-btn').addEventListener('click', addWall);
+document.getElementById('add-p-btn').addEventListener('click', addPurlin);
 document.getElementById('calc-btn').addEventListener('click', calculateCutting);
 document.getElementById('pdf-btn').addEventListener('click', () => window.print());
+renumberAxes();
 
 // Перехватчик событий клика (делегирование)
 wContainer.addEventListener('click', function(e) {
     if (!e.target) return;
-    const wallNode = e.target.closest('.wall');
+    const wallNode = e.target.closest('.axis-block');
     if (!wallNode) return;
     
-    // Переключатель блока Фронтона
+    // Переключатель блока Фронтона (только для стен)
     if (e.target.classList.contains('add-gable-trigger-btn')) {
         const block = wallNode.querySelector('.gable-fields-block');
         if (block) { block.style.display = 'block'; e.target.style.display = 'none'; }
@@ -24,7 +26,7 @@ wContainer.addEventListener('click', function(e) {
         if (block && btn) { block.style.display = 'none'; btn.style.display = 'inline-flex'; }
     }
 
-    // Переключатель блока Консолей
+    // Переключатель блока Консолей (только для стен)
     if (e.target.classList.contains('add-console-trigger-btn')) {
         const block = wallNode.querySelector('.console-fields-block');
         if (block) { block.style.display = 'block'; e.target.style.display = 'none'; }
@@ -35,39 +37,32 @@ wContainer.addEventListener('click', function(e) {
         if (block && btn) { block.style.display = 'none'; btn.style.display = 'inline-flex'; }
     }
 
-    // ОТДЕЛЬНОЕ СОБЫТИЕ: Переключатель блока Слеги/Конька
-    if (e.target.classList.contains('add-purlin-trigger-btn')) {
-        const block = wallNode.querySelector('.purlin-fields-block');
-        if (block) { block.style.display = 'block'; e.target.style.display = 'none'; }
-    }
-    if (e.target.classList.contains('del-purlin-btn')) {
-        const block = wallNode.querySelector('.purlin-fields-block');
-        const btn = wallNode.querySelector('.add-purlin-trigger-btn');
-        if (block && btn) { block.style.display = 'none'; btn.style.display = 'inline-flex'; }
-    }
-
-    // Удаление стен и управление проемами
-    if (e.target.classList.contains('del-w-btn')) { wallNode.remove(); }
+    // Удаление оси (стены или слеги) и управление проемами
+    if (e.target.classList.contains('del-w-btn')) { wallNode.remove(); renumberAxes(); }
     if (e.target.classList.contains('add-op-btn')) {
         const list = wallNode.querySelector('.openings-list'); if (list) addOpening(list);
     }
     if (e.target.classList.contains('del-op-btn')) {
         const item = e.target.closest('.opening-item'); if (item) item.remove();
     }
+    // Смена типа слеги обновляет подпись оси
+    if (e.target.classList.contains('w-purlin-type')) { renumberAxes(); }
+});
+// Смена select "Тип балки" не всплывает как click в некоторых браузерах — слушаем change отдельно
+wContainer.addEventListener('change', function(e) {
+    if (e.target && e.target.classList.contains('w-purlin-type')) { renumberAxes(); }
 });
 function addWall() {
     wCount++;
-    const sampleWall = document.querySelector('.wall');
+    const sampleWall = document.querySelector('.wall.axis-block');
     if (!sampleWall) return;
 
     const newWall = sampleWall.cloneNode(true);
-    newWall.querySelector('.wall-title').innerText = 'Стена №' + wCount;
     
     // Сбрасываем кнопки и скрываем инженерные блоки в клоне
     const config = [
         ['.add-gable-trigger-btn', '.gable-fields-block'],
-        ['.add-console-trigger-btn', '.console-fields-block'],
-        ['.add-purlin-trigger-btn', '.purlin-fields-block']
+        ['.add-console-trigger-btn', '.console-fields-block']
     ];
     config.forEach(([btnClass, blockClass]) => {
         const btn = newWall.querySelector(btnClass);
@@ -78,6 +73,59 @@ function addWall() {
     const list = newWall.querySelector('.openings-list');
     if (list) { list.innerHTML = ''; addOpening(list); }
     wContainer.appendChild(newWall);
+    renumberAxes();
+}
+
+// Создает новый блок оси-слеги (продольная/коньковая балка) как самостоятельный элемент списка
+function createPurlinNode() {
+    const div = document.createElement('div');
+    div.className = 'axis-block purlin';
+    div.innerHTML = `
+        <div class="wall-head">
+            <span class="wall-title">Ось: Слега</span>
+            <button type="button" class="btn-red del-w-btn">Удалить слегу</button>
+        </div>
+        <div class="row">
+            <div class="item" style="flex: 1.5;"><label>Тип балки</label>
+                <select class="w-purlin-type">
+                    <option value="ridge">Коньковая слега (по центру здания)</option>
+                    <option value="porch">Подстропильная балка выноса крыльца</option>
+                </select>
+            </div>
+            <div class="item" style="flex: 1.5;"><label>Длина по осям (м)</label><input type="number" class="w-len" value="6.00" step="0.01"></div>
+            <div class="item"><label>Выпуск левый (мм)</label><input type="number" class="w-left-overhang" value="500"></div>
+            <div class="item"><label>Выпуск правый (мм)</label><input type="number" class="w-right-overhang" value="500"></div>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+            <div class="item"><label>Начальный венец укладки</label><input type="number" class="w-start-row" value="16" step="1"></div>
+            <div class="item"><label>Кол-во венцов (диапазон)</label><input type="number" class="w-crowns" value="1" step="1"></div>
+            <div class="item" style="flex: 2;"><label>Точки опоры / пересечения (м от начала через запятую)</label><input type="text" class="w-intersections" value=""></div>
+        </div>
+    `;
+    return div;
+}
+
+function addPurlin() {
+    const newPurlin = createPurlinNode();
+    wContainer.appendChild(newPurlin);
+    renumberAxes();
+}
+
+// Пересчитывает сквозную нумерацию осей "Ось N" по фактическому порядку блоков в списке
+function renumberAxes() {
+    const blocks = wContainer.querySelectorAll('.axis-block');
+    blocks.forEach((block, idx) => {
+        const n = idx + 1;
+        const titleSpan = block.querySelector('.wall-title');
+        if (!titleSpan) return;
+        if (block.classList.contains('purlin')) {
+            const typeSel = block.querySelector('.w-purlin-type');
+            const typeLabel = (typeSel && typeSel.value === 'porch') ? 'Слега (крыльцо)' : 'Слега (коньковая)';
+            titleSpan.innerText = `Ось ${n}: ${typeLabel}`;
+        } else {
+            titleSpan.innerText = `Ось ${n}: Стена`;
+        }
+    });
 }
 
 function addOpening(container) {
@@ -109,27 +157,39 @@ function calculateCutting() {
     const previewContainer = document.getElementById('walls-preview-container');
     previewContainer.innerHTML = ''; 
 
-    const activeWalls = document.querySelectorAll('#w-container > .wall');
+    const activeWalls = document.querySelectorAll('#w-container > .axis-block');
     let validWallFound = false;
 
     activeWalls.forEach((wallNode, wIdx) => {
-        validWallFound = true;
-        const wLabel = `Ст.${wIdx + 1}`;
+        const isPurlin = wallNode.classList.contains('purlin');
+        const wLabel = `Ось ${wIdx + 1}`;
         const wLenClean = parseFloat(wallNode.querySelector('.w-len').value);
-        const wCrownsNormal = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
-        const wStartOffsetCrowns = parseFloat(wallNode.querySelector('.w-start-row').value) || 0;
-        const wCornerType = wallNode.querySelector('.w-corner-type').value;
-        const overhangStyle = wallNode.querySelector('.w-overhang-style').value;
 
-        // Отказоустойчивое чтение: если блок скрыт, подставляем false
+        // Отказоустойчивое чтение: если блок скрыт (или не существует у слеги), подставляем false
         const gableBlock = wallNode.querySelector('.gable-fields-block');
         const hasGable = gableBlock && gableBlock.style.display === 'block';
 
         const consoleBlock = wallNode.querySelector('.console-fields-block');
         const hasConsole = consoleBlock && consoleBlock.style.display === 'block';
 
-        const purlinBlock = wallNode.querySelector('.purlin-fields-block');
-        const hasPurlin = purlinBlock && purlinBlock.style.display === 'block';
+        // Стены и слеги по-разному трактуют "стартовый ряд"/"кол-во венцов":
+        // у стены это селект смещения (0 / 0.5) + кол-во прямоугольных венцов,
+        // у слеги — это конкретный номер начального венца укладки + диапазон венцов.
+        let wCrownsNormal, wStartOffsetCrowns;
+        if (isPurlin) {
+            const purlinStartRow = parseInt(wallNode.querySelector('.w-start-row').value) || 1;
+            wStartOffsetCrowns = Math.max(0, purlinStartRow - 1);
+            wCrownsNormal = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
+        } else {
+            wStartOffsetCrowns = parseFloat(wallNode.querySelector('.w-start-row').value) || 0;
+            wCrownsNormal = parseInt(wallNode.querySelector('.w-crowns').value) || 0;
+        }
+
+        // У слеги нет углов/декоративного реза — считаем безопасные умолчания
+        const cornerSel = wallNode.querySelector('.w-corner-type');
+        const wCornerType = isPurlin ? 'corner' : (cornerSel ? cornerSel.value : 'corner');
+        const styleSel = wallNode.querySelector('.w-overhang-style');
+        const overhangStyle = styleSel ? styleSel.value : 'straight';
 
         const wType = hasGable ? gableBlock.querySelector('.w-roof-type').value : 'normal';
         const wCrownsTotal = wCrownsNormal + (hasGable ? (parseInt(gableBlock.querySelector('.w-gable-crowns').value) || 0) : 0);
@@ -145,20 +205,17 @@ function calculateCutting() {
         const cLeftLen = hasConsole ? ((parseFloat(consoleBlock.querySelector('.w-console-left-step').value) || 0) / 1000) : 0;
         const cRightLen = hasConsole ? ((parseFloat(consoleBlock.querySelector('.w-console-right-step').value) || 0) / 1000) : 0;
 
-        const intersectionsInput = wallNode.querySelector('.w-intersections').value;
+        const intersectionsField = wallNode.querySelector('.w-intersections');
+        const intersectionsInput = intersectionsField ? intersectionsField.value : '';
         let intersections = intersectionsInput.split(',')
             .map(x => parseFloat(x.trim()))
             .filter(x => !isNaN(x) && x >= 0 && x <= wLenClean);
 
         if (isNaN(wLenClean) || wLenClean <= 0 || wCrownsNormal <= 0) return;
+        validWallFound = true;
 
         let maxLOverhang = Math.max(baseLeftOverhang, hasConsole ? cLeftLen : 0);
         let maxROverhang = Math.max(baseRightOverhang, hasConsole ? cRightLen : 0);
-
-        if (hasPurlin) {
-            const pFront = (parseFloat(purlinBlock.querySelector('.w-purlin-front').value) || 0) / 1000;
-            maxLOverhang = Math.max(maxLOverhang, pFront);
-        }
 
         const wLenCanvasMax = maxLOverhang + wLenClean + maxROverhang;
         const totalWallHeight = (wCrownsTotal + wStartOffsetCrowns) * bH;
@@ -169,7 +226,13 @@ function calculateCutting() {
         
         const visualTitle = document.createElement('div');
         visualTitle.className = 'wall-visual-title';
-        visualTitle.innerText = `Развертка стены №${wIdx + 1} (${wCornerType === 'corner' ? 'Угловой замок' : 'Т-переруб'}, Смещение +${wStartOffsetCrowns}в.)`;
+        if (isPurlin) {
+            const purlinTypeSel = wallNode.querySelector('.w-purlin-type');
+            const purlinTypeLabel = (purlinTypeSel && purlinTypeSel.value === 'porch') ? 'Подстропильная балка выноса крыльца' : 'Коньковая слега';
+            visualTitle.innerText = `Развертка ${wLabel} — ${purlinTypeLabel} (укладка с венца ${wStartOffsetCrowns + 1}, венцов: ${wCrownsNormal})`;
+        } else {
+            visualTitle.innerText = `Развертка ${wLabel} — Стена (${wCornerType === 'corner' ? 'Угловой замок' : 'Т-переруб'}, Смещение +${wStartOffsetCrowns}в.)`;
+        }
         visualBlock.appendChild(visualTitle);
 
         const canvas = document.createElement('div');
@@ -229,18 +292,6 @@ function calculateCutting() {
 
             let currentLeftOverhang = baseLeftOverhang;
             let currentRightOverhang = baseRightOverhang;
-
-            if (hasPurlin) {
-                const pCrown = parseInt(purlinBlock.querySelector('.w-purlin-crown').value) || 0;
-                const pFront = (parseFloat(purlinBlock.querySelector('.w-purlin-front').value) || 0) / 1000;
-                const pDepth = (parseFloat(purlinBlock.querySelector('.w-purlin-depth').value) || 0) / 1000;
-                const pType = purlinBlock.querySelector('.w-purlin-type').value;
-
-                if (crown === pCrown) {
-                    if (pType === 'ridge') { currentLeftOverhang = pFront; currentRightOverhang = pFront; }
-                    else { currentLeftOverhang = pFront; currentRightOverhang = -pDepth; }
-                }
-            }
 
             if (hasConsole && crown >= cStart && crown < (cStart + cCount)) {
                 currentLeftOverhang = cLeftLen; currentRightOverhang = cRightLen;
@@ -327,7 +378,7 @@ function calculateCutting() {
             });
         }
     });
-    if (!validWallFound || flatParts.length === 0) { alert('Добавьте хотя бы одну стену с корректными размерами!'); return; }
+    if (!validWallFound || flatParts.length === 0) { alert('Добавьте хотя бы одну ось (стену или слегу) с корректными размерами!'); return; }
     flatParts.sort((a, b) => b.length - a.length);
     let boards = [];
 
