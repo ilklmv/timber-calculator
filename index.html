@@ -23,12 +23,13 @@
         <div class="item"><label>Припуск на торцовку (мм)</label><input type="number" id="trim" value="50"></div>
     </div>
 
-    <h2>Параметры стен, перерубов и конструктивных балок</h2>
+    <h2>Параметры осей: стены, перерубы, консоли и слеги</h2>
+    <p style="margin: -8px 0 20px; font-size: 13px; color: var(--text-muted);">Стены и балки (слеги) образуют единый нумерованный список осей — порядок добавления определяет номер оси (Ось 1, Ось 2, ...).</p>
     <div id="w-container">
-        <!-- Стена №1 (Базовая конструкция) -->
-        <div class="wall">
+        <!-- Ось 1 (Базовая стена) -->
+        <div class="wall axis-block">
             <div class="wall-head">
-                <span class="wall-title">Стена №1</span>
+                <span class="wall-title">Ось 1: Стена</span>
                 <button type="button" class="btn-red del-w-btn">Удалить стену</button>
             </div>
             <div class="row">
@@ -64,7 +65,6 @@
             <div style="margin-top: 15px; margin-bottom: 5px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn-blue add-gable-trigger-btn" style="background: #475569; font-size: 13px; padding: 8px 16px;">+ Фронтон</button>
                 <button type="button" class="btn-blue add-console-trigger-btn" style="background: #64748b; font-size: 13px; padding: 8px 16px;">+ Консоли свеса</button>
-                <button type="button" class="btn-blue add-purlin-trigger-btn" style="background: #0284c7; font-size: 13px; padding: 8px 16px;">+ Коньковые / Продольные слеги</button>
             </div>
 
             <!-- Блок фронтона -->
@@ -100,25 +100,6 @@
                 </div>
             </div>
 
-            <!-- Блок коньковых / продольных слег -->
-            <div class="purlin-fields-block" style="display: none; background: #f0fdfa; padding: 20px; border-radius: 8px; border: 1px solid #99f6e4; margin-top: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h5 style="margin: 0; font-size: 14px; color: #0f766e; font-weight: 700;">Коньковые балки и продольные слеги (Выносы под крыльцо/террасу)</h5>
-                    <button type="button" class="btn-red del-purlin-btn" style="padding: 4px 8px; font-size: 11px;">Удалить слеги</button>
-                </div>
-                <div class="row">
-                    <div class="item" style="flex: 1.5;"><label>Тип балки</label>
-                        <select class="w-purlin-type">
-                            <option value="ridge">Коньковая слега (По центру здания)</option>
-                            <option value="porch">Подстропильная балка выноса крыльца</option>
-                        </select>
-                    </div>
-                    <div class="item"><label>Венец укладки (высота)</label><input type="number" class="w-purlin-crown" value="16"></div>
-                    <div class="item"><label>Вынос балки вперед (мм)</label><input type="number" class="w-purlin-front" value="1500"></div>
-                    <div class="item"><label>Заглубление в переруб (мм)</label><input type="number" class="w-purlin-depth" value="400"></div>
-                </div>
-            </div>
-
             <div class="openings-section">
                 <h4 style="margin: 10px 0 5px 0; color: #34495e;">Проемы в этой стене (Окна / Двери):</h4>
                 <div class="openings-list">
@@ -136,9 +117,10 @@
         </div>
     </div>
     
-    <!-- Добавление новой стены -->
-    <div style="margin-top: 25px; margin-bottom: 25px;">
-        <button type="button" class="btn-blue" id="add-w-btn" style="padding: 14px 28px; font-size: 15px;">+ Добавить еще одну стену</button>
+    <!-- Добавление новой оси -->
+    <div style="margin-top: 25px; margin-bottom: 25px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <button type="button" class="btn-blue" id="add-w-btn" style="padding: 14px 28px; font-size: 15px;">+ Добавить стену</button>
+        <button type="button" class="btn-blue" id="add-p-btn" style="padding: 14px 28px; font-size: 15px; background: #0284c7;">+ Добавить слегу / балку</button>
     </div>
     
     <button type="button" class="btn-green" id="calc-btn">Сгенерировать порядовку и карту раскроя</button>
