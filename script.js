@@ -9,6 +9,59 @@ document.getElementById('calc-btn').addEventListener('click', calculateCutting);
 document.getElementById('pdf-btn').addEventListener('click', () => window.print());
 renumberAxes();
 
+// --- Реестр осей (координатная сетка) ---
+const axisContainer = document.getElementById('axis-registry-container');
+document.getElementById('add-axis-btn').addEventListener('click', addAxisRow);
+axisContainer.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('del-axis-btn')) {
+        const row = e.target.closest('.axis-row');
+        if (row) { row.remove(); refreshAxisDatalist(); }
+    }
+});
+axisContainer.addEventListener('input', function(e) {
+    if (e.target && e.target.classList.contains('axis-label')) refreshAxisDatalist();
+});
+refreshAxisDatalist();
+
+function addAxisRow() {
+    const div = document.createElement('div');
+    div.className = 'axis-row row';
+    div.style.alignItems = 'flex-end';
+    div.innerHTML = `
+        <div class="item"><label>Метка оси</label><input type="text" class="axis-label" value=""></div>
+        <div class="item"><label>Координата (м)</label><input type="number" class="axis-coord" value="0.00" step="0.01"></div>
+        <div><button type="button" class="btn-red del-axis-btn" style="padding:7px 10px;">✕</button></div>
+    `;
+    axisContainer.appendChild(div);
+    refreshAxisDatalist();
+}
+
+// Обновляет datalist автодополнения меток осей для полей "Своя ось"/"От оси"/"До оси"
+function refreshAxisDatalist() {
+    const datalist = document.getElementById('axis-labels-list');
+    if (!datalist) return;
+    const labels = [...axisContainer.querySelectorAll('.axis-label')].map(inp => inp.value.trim()).filter(Boolean);
+    datalist.innerHTML = [...new Set(labels)].map(l => `<option value="${l}"></option>`).join('');
+}
+
+// Читает реестр осей в карту { метка: { type: 'digit'|'letter', coord: число } }
+// Цифровая ось (метка полностью число) — вертикальная линия сетки (координата по X).
+// Буквенная ось (любая другая метка) — горизонтальная линия сетки (координата по Y).
+function getAxisMap() {
+    const map = {};
+    axisContainer.querySelectorAll('.axis-row').forEach(row => {
+        const labelInp = row.querySelector('.axis-label');
+        const coordInp = row.querySelector('.axis-coord');
+        if (!labelInp || !coordInp) return;
+        const label = labelInp.value.trim();
+        const coord = parseFloat(coordInp.value);
+        if (!label || isNaN(coord)) return;
+        const isDigit = /^-?\d+(\.\d+)?$/.test(label);
+        map[label] = { type: isDigit ? 'digit' : 'letter', coord: coord };
+    });
+    return map;
+}
+
 // Перехватчик событий клика (делегирование)
 wContainer.addEventListener('click', function(e) {
     if (!e.target) return;
@@ -101,6 +154,11 @@ function createPurlinNode() {
             <div class="item"><label>Кол-во венцов (диапазон)</label><input type="number" class="w-crowns" value="1" step="1"></div>
             <div class="item" style="flex: 2;"><label>Точки опоры / пересечения (м от начала через запятую)</label><input type="text" class="w-intersections" value=""></div>
         </div>
+        <div class="row" style="margin-top: -6px;">
+            <div class="item"><label>Своя ось (на которой лежит)</label><input type="text" class="w-own-axis" list="axis-labels-list" value=""></div>
+            <div class="item"><label>От оси</label><input type="text" class="w-from-axis" list="axis-labels-list" value=""></div>
+            <div class="item"><label>До оси</label><input type="text" class="w-to-axis" list="axis-labels-list" value=""></div>
+        </div>
     `;
     return div;
 }
@@ -157,13 +215,16 @@ function calculateCutting() {
     const previewContainer = document.getElementById('walls-preview-container');
     previewContainer.innerHTML = ''; 
 
+    const axisMap = getAxisMap();
+    let placedElements = [];
+
     const activeWalls = document.querySelectorAll('#w-container > .axis-block');
     let validWallFound = false;
 
     activeWalls.forEach((wallNode, wIdx) => {
         const isPurlin = wallNode.classList.contains('purlin');
         const wLabel = `Ось ${wIdx + 1}`;
-        const wLenClean = parseFloat(wallNode.querySelector('.w-len').value);
+        let wLenClean = parseFloat(wallNode.querySelector('.w-len').value);
 
         // Отказоустойчивое чтение: если блок скрыт (или не существует у слеги), подставляем false
         const gableBlock = wallNode.querySelector('.gable-fields-block');
@@ -204,6 +265,39 @@ function calculateCutting() {
         const cCount = hasConsole ? (parseInt(consoleBlock.querySelector('.w-console-count').value) || 0) : 0;
         const cLeftLen = hasConsole ? ((parseFloat(consoleBlock.querySelector('.w-console-left-step').value) || 0) / 1000) : 0;
         const cRightLen = hasConsole ? ((parseFloat(consoleBlock.querySelector('.w-console-right-step').value) || 0) / 1000) : 0;
+
+        // Привязка к реестру осей: "Своя ось" (на которой лежит) + "От оси"/"До оси" (перпендикулярные, задают диапазон).
+        // Если привязка валидна — длина считается автоматически из координат осей, а элемент получает реальные 2D-координаты для плана.
+        const ownAxisField = wallNode.querySelector('.w-own-axis');
+        const fromAxisField = wallNode.querySelector('.w-from-axis');
+        const toAxisField = wallNode.querySelector('.w-to-axis');
+        const ownAxisLabel = ownAxisField ? ownAxisField.value.trim() : '';
+        const fromAxisLabel = fromAxisField ? fromAxisField.value.trim() : '';
+        const toAxisLabel = toAxisField ? toAxisField.value.trim() : '';
+
+        let gridPlacement = null;
+        if (ownAxisLabel && fromAxisLabel && toAxisLabel && axisMap[ownAxisLabel] && axisMap[fromAxisLabel] && axisMap[toAxisLabel]) {
+            const ownAx = axisMap[ownAxisLabel], fromAx = axisMap[fromAxisLabel], toAx = axisMap[toAxisLabel];
+            // "От"/"До" должны быть осями одного (перпендикулярного) семейства, а "своя" — противоположного
+            if (fromAx.type === toAx.type && ownAx.type !== fromAx.type) {
+                const computedLen = Math.abs(toAx.coord - fromAx.coord);
+                if (computedLen > 0.001) {
+                    wLenClean = computedLen;
+                    const dirSign = Math.sign(toAx.coord - fromAx.coord) || 1;
+                    let start, end, ux, uy;
+                    if (ownAx.type === 'digit') {
+                        start = { x: ownAx.coord, y: fromAx.coord };
+                        end = { x: ownAx.coord, y: toAx.coord };
+                        ux = 0; uy = dirSign;
+                    } else {
+                        start = { x: fromAx.coord, y: ownAx.coord };
+                        end = { x: toAx.coord, y: ownAx.coord };
+                        ux = dirSign; uy = 0;
+                    }
+                    gridPlacement = { start, end, ux, uy };
+                }
+            }
+        }
 
         const intersectionsField = wallNode.querySelector('.w-intersections');
         const intersectionsInput = intersectionsField ? intersectionsField.value : '';
@@ -281,6 +375,21 @@ function calculateCutting() {
                 canvas.appendChild(opDiv);
             }
         });
+
+        if (gridPlacement) {
+            placedElements.push({
+                type: isPurlin ? 'purlin' : 'wall',
+                label: wLabel,
+                start: gridPlacement.start,
+                end: gridPlacement.end,
+                ux: gridPlacement.ux,
+                uy: gridPlacement.uy,
+                bW: bW,
+                leftOverhang: baseLeftOverhang,
+                rightOverhang: baseRightOverhang,
+                openings: openings.map(o => ({ name: o.name, offset: o.start - leftBaseOffset, width: o.end - o.start }))
+            });
+        }
 
         for (let crown = 1; crown <= wCrownsTotal; crown++) {
             const crownDiv = document.createElement('div');
@@ -378,6 +487,16 @@ function calculateCutting() {
             });
         }
     });
+
+    const planContainer = document.getElementById('floor-plan-container');
+    if (planContainer) {
+        if (placedElements.length > 0) {
+            planContainer.innerHTML = renderFloorPlanSVG(placedElements, axisMap);
+        } else {
+            planContainer.innerHTML = '<p style="color:var(--text-muted); font-size:13px; margin:0;">Чтобы построить 2D-план, привяжите хотя бы одну стену/слегу к осям: заполните поля «Своя ось», «От оси» и «До оси» значениями из реестра осей выше.</p>';
+        }
+    }
+
     if (!validWallFound || flatParts.length === 0) { alert('Добавьте хотя бы одну ось (стену или слегу) с корректными размерами!'); return; }
     flatParts.sort((a, b) => b.length - a.length);
     let boards = [];
@@ -432,4 +551,121 @@ function calculateCutting() {
         mapContainer.appendChild(row);
     });
     document.getElementById('r-block').style.display = 'block';
+}
+
+// Строит SVG 2D-плана клети: стены/слеги как прямоугольники в реальных координатах осей,
+// полные линии сетки с подписями-бабблами и размерные цепочки по цифровым и буквенным осям.
+function renderFloorPlanSVG(elements, axisMap) {
+    const scalePxPerM = 50;
+    const marginLeft = 90, marginTop = 60, marginRight = 60, marginBottom = 90;
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    function extend(x, y) {
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+
+    elements.forEach(el => {
+        const half = el.bW / 2;
+        const sx = el.start.x - el.ux * el.leftOverhang, sy = el.start.y - el.uy * el.leftOverhang;
+        const ex = el.end.x + el.ux * el.rightOverhang, ey = el.end.y + el.uy * el.rightOverhang;
+        const perpX = -el.uy, perpY = el.ux;
+        extend(sx + perpX * half, sy + perpY * half); extend(sx - perpX * half, sy - perpY * half);
+        extend(ex + perpX * half, ey + perpY * half); extend(ex - perpX * half, ey - perpY * half);
+    });
+    Object.values(axisMap).forEach(ax => {
+        if (ax.type === 'digit') { extend(ax.coord, minY); extend(ax.coord, maxY); }
+        else { extend(minX, ax.coord); extend(maxX, ax.coord); }
+    });
+    if (minX === Infinity) return '';
+
+    const worldW = Math.max(maxX - minX, 0.5);
+    const worldH = Math.max(maxY - minY, 0.5);
+    const svgW = marginLeft + worldW * scalePxPerM + marginRight;
+    const svgH = marginTop + worldH * scalePxPerM + marginBottom;
+
+    const px = x => marginLeft + (x - minX) * scalePxPerM;
+    const py = y => marginTop + (y - minY) * scalePxPerM;
+
+    let parts = [];
+    parts.push(`<svg viewBox="0 0 ${svgW.toFixed(0)} ${svgH.toFixed(0)}" width="100%" style="max-width:900px; background:#1e2530; border-radius:6px;" xmlns="http://www.w3.org/2000/svg">`);
+
+    const digitAxes = Object.entries(axisMap).filter(([, a]) => a.type === 'digit').sort((a, b) => a[1].coord - b[1].coord);
+    const letterAxes = Object.entries(axisMap).filter(([, a]) => a.type === 'letter').sort((a, b) => a[1].coord - b[1].coord);
+
+    digitAxes.forEach(([label, ax]) => {
+        const x = px(ax.coord);
+        parts.push(`<line x1="${x}" y1="${marginTop - 25}" x2="${x}" y2="${(marginTop + worldH * scalePxPerM + 25).toFixed(1)}" stroke="rgba(255,255,255,0.25)" stroke-dasharray="6 4" stroke-width="1"/>`);
+        parts.push(`<circle cx="${x}" cy="${marginTop - 40}" r="13" fill="#0f172a" stroke="#60a5fa" stroke-width="1.2"/>`);
+        parts.push(`<text x="${x}" y="${marginTop - 40}" text-anchor="middle" dominant-baseline="central" fill="#93c5fd" font-size="12" font-weight="700">${label}</text>`);
+    });
+    letterAxes.forEach(([label, ax]) => {
+        const y = py(ax.coord);
+        parts.push(`<line x1="${marginLeft - 25}" y1="${y}" x2="${(marginLeft + worldW * scalePxPerM + 25).toFixed(1)}" y2="${y}" stroke="rgba(255,255,255,0.25)" stroke-dasharray="6 4" stroke-width="1"/>`);
+        parts.push(`<circle cx="${marginLeft - 40}" cy="${y}" r="13" fill="#0f172a" stroke="#60a5fa" stroke-width="1.2"/>`);
+        parts.push(`<text x="${marginLeft - 40}" y="${y}" text-anchor="middle" dominant-baseline="central" fill="#93c5fd" font-size="12" font-weight="700">${label}</text>`);
+    });
+
+    if (digitAxes.length > 0) {
+        const dimY = marginTop + worldH * scalePxPerM + 55;
+        for (let i = 0; i < digitAxes.length - 1; i++) {
+            const x1 = px(digitAxes[i][1].coord), x2 = px(digitAxes[i + 1][1].coord);
+            const dist = Math.abs(digitAxes[i + 1][1].coord - digitAxes[i][1].coord);
+            parts.push(`<line x1="${x1}" y1="${dimY}" x2="${x2}" y2="${dimY}" stroke="#94a3b8" stroke-width="1"/>`);
+            parts.push(`<line x1="${x1}" y1="${dimY - 4}" x2="${x1}" y2="${dimY + 4}" stroke="#94a3b8" stroke-width="1"/>`);
+            parts.push(`<line x1="${x2}" y1="${dimY - 4}" x2="${x2}" y2="${dimY + 4}" stroke="#94a3b8" stroke-width="1"/>`);
+            parts.push(`<text x="${((x1 + x2) / 2).toFixed(1)}" y="${dimY - 8}" text-anchor="middle" fill="#cbd5e1" font-size="11">${dist.toFixed(2)}</text>`);
+        }
+        if (digitAxes.length > 1) {
+            const x1 = px(digitAxes[0][1].coord), x2 = px(digitAxes[digitAxes.length - 1][1].coord);
+            const total = Math.abs(digitAxes[digitAxes.length - 1][1].coord - digitAxes[0][1].coord);
+            const dimY2 = dimY + 22;
+            parts.push(`<line x1="${x1}" y1="${dimY2}" x2="${x2}" y2="${dimY2}" stroke="#64748b" stroke-width="1"/>`);
+            parts.push(`<text x="${((x1 + x2) / 2).toFixed(1)}" y="${dimY2 - 8}" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">${total.toFixed(2)}</text>`);
+        }
+    }
+    if (letterAxes.length > 0) {
+        const dimX = marginLeft - 55;
+        for (let i = 0; i < letterAxes.length - 1; i++) {
+            const y1 = py(letterAxes[i][1].coord), y2 = py(letterAxes[i + 1][1].coord);
+            const dist = Math.abs(letterAxes[i + 1][1].coord - letterAxes[i][1].coord);
+            parts.push(`<line x1="${dimX}" y1="${y1}" x2="${dimX}" y2="${y2}" stroke="#94a3b8" stroke-width="1"/>`);
+            parts.push(`<line x1="${dimX - 4}" y1="${y1}" x2="${dimX + 4}" y2="${y1}" stroke="#94a3b8" stroke-width="1"/>`);
+            parts.push(`<line x1="${dimX - 4}" y1="${y2}" x2="${dimX + 4}" y2="${y2}" stroke="#94a3b8" stroke-width="1"/>`);
+            parts.push(`<text x="${dimX - 8}" y="${((y1 + y2) / 2).toFixed(1)}" text-anchor="end" dominant-baseline="central" fill="#cbd5e1" font-size="11">${dist.toFixed(2)}</text>`);
+        }
+    }
+
+    elements.forEach(el => {
+        const half = el.bW / 2;
+        const sx = el.start.x - el.ux * el.leftOverhang, sy = el.start.y - el.uy * el.leftOverhang;
+        const ex = el.end.x + el.ux * el.rightOverhang, ey = el.end.y + el.uy * el.rightOverhang;
+        const isPurlin = el.type === 'purlin';
+        const fill = isPurlin ? 'rgba(45,212,191,0.35)' : '#475569';
+        const stroke = isPurlin ? '#2dd4bf' : '#0f172a';
+        const dash = isPurlin ? ' stroke-dasharray="4 3"' : '';
+
+        let rx, ry, rw, rh;
+        if (el.uy !== 0) {
+            rx = px(el.start.x - half); ry = py(Math.min(sy, ey)); rw = el.bW * scalePxPerM; rh = Math.abs(ey - sy) * scalePxPerM;
+        } else {
+            rx = px(Math.min(sx, ex)); ry = py(el.start.y - half); rw = Math.abs(ex - sx) * scalePxPerM; rh = el.bW * scalePxPerM;
+        }
+        parts.push(`<rect x="${rx.toFixed(1)}" y="${ry.toFixed(1)}" width="${rw.toFixed(1)}" height="${rh.toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="1"${dash}/>`);
+
+        el.openings.forEach(o => {
+            const oaX = el.start.x + el.ux * o.offset, oaY = el.start.y + el.uy * o.offset;
+            const obX = el.start.x + el.ux * (o.offset + o.width), obY = el.start.y + el.uy * (o.offset + o.width);
+            let ox, oy, ow, oh;
+            if (el.uy !== 0) { ox = px(el.start.x - half); oy = py(Math.min(oaY, obY)); ow = el.bW * scalePxPerM; oh = Math.abs(obY - oaY) * scalePxPerM; }
+            else { ox = px(Math.min(oaX, obX)); oy = py(el.start.y - half); ow = Math.abs(obX - oaX) * scalePxPerM; oh = el.bW * scalePxPerM; }
+            parts.push(`<rect x="${ox.toFixed(1)}" y="${oy.toFixed(1)}" width="${ow.toFixed(1)}" height="${oh.toFixed(1)}" fill="#1e2530" stroke="#f87171" stroke-width="1" stroke-dasharray="3 2"/>`);
+        });
+
+        const midX = px((sx + ex) / 2), midY = py((sy + ey) / 2);
+        parts.push(`<text x="${midX.toFixed(1)}" y="${midY.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="#f1f5f9" font-size="10" font-weight="700" style="paint-order: stroke; stroke: #0f172a; stroke-width: 3px;">${el.label}</text>`);
+    });
+
+    parts.push('</svg>');
+    return parts.join('');
 }
