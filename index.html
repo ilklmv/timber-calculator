@@ -23,6 +23,33 @@
         <div class="item"><label>Припуск на торцовку (мм)</label><input type="number" id="trim" value="50"></div>
     </div>
 
+    <h2>Реестр осей (координатная сетка)</h2>
+    <p style="margin: -8px 0 15px; font-size: 13px; color: var(--text-muted);">Цифровые оси (1, 2, 3…) — вертикальные линии сетки по X. Буквенные оси (А, Б, В…) — горизонтальные линии сетки по Y. Привяжите стену/слегу к пересечению осей ("Своя ось" + "От оси"/"До оси"), чтобы её длина считалась автоматически и она попала на 2D-план.</p>
+    <div id="axis-registry-container">
+        <div class="axis-row row" style="align-items:flex-end;">
+            <div class="item"><label>Метка оси</label><input type="text" class="axis-label" value="1"></div>
+            <div class="item"><label>Координата (м)</label><input type="number" class="axis-coord" value="0.00" step="0.01"></div>
+            <div><button type="button" class="btn-red del-axis-btn" style="padding:7px 10px;">✕</button></div>
+        </div>
+        <div class="axis-row row" style="align-items:flex-end;">
+            <div class="item"><label>Метка оси</label><input type="text" class="axis-label" value="2"></div>
+            <div class="item"><label>Координата (м)</label><input type="number" class="axis-coord" value="8.00" step="0.01"></div>
+            <div><button type="button" class="btn-red del-axis-btn" style="padding:7px 10px;">✕</button></div>
+        </div>
+        <div class="axis-row row" style="align-items:flex-end;">
+            <div class="item"><label>Метка оси</label><input type="text" class="axis-label" value="А"></div>
+            <div class="item"><label>Координата (м)</label><input type="number" class="axis-coord" value="0.00" step="0.01"></div>
+            <div><button type="button" class="btn-red del-axis-btn" style="padding:7px 10px;">✕</button></div>
+        </div>
+        <div class="axis-row row" style="align-items:flex-end;">
+            <div class="item"><label>Метка оси</label><input type="text" class="axis-label" value="Б"></div>
+            <div class="item"><label>Координата (м)</label><input type="number" class="axis-coord" value="6.00" step="0.01"></div>
+            <div><button type="button" class="btn-red del-axis-btn" style="padding:7px 10px;">✕</button></div>
+        </div>
+    </div>
+    <button type="button" class="btn-blue" id="add-axis-btn" style="background:#0284c7; font-size:13px; margin-bottom:10px;">+ Добавить ось</button>
+    <datalist id="axis-labels-list"></datalist>
+
     <h2>Параметры осей: стены, перерубы, консоли и слеги</h2>
     <p style="margin: -8px 0 20px; font-size: 13px; color: var(--text-muted);">Стены и балки (слеги) образуют единый нумерованный список осей — порядок добавления определяет номер оси (Ось 1, Ось 2, ...).</p>
     <div id="w-container">
@@ -43,6 +70,11 @@
                         <option value="0.5">Полувенец (Смещение +0.5)</option>
                     </select>
                 </div>
+            </div>
+            <div class="row" style="margin-top: -6px;">
+                <div class="item"><label>Своя ось (на которой лежит)</label><input type="text" class="w-own-axis" list="axis-labels-list" value="А"></div>
+                <div class="item"><label>От оси</label><input type="text" class="w-from-axis" list="axis-labels-list" value="1"></div>
+                <div class="item"><label>До оси</label><input type="text" class="w-to-axis" list="axis-labels-list" value="2"></div>
             </div>
             
             <div class="row" style="margin-top: 10px;">
@@ -134,6 +166,8 @@
                 <div class="res-box">Количество заготовок<span id="r-pcs">0</span> шт.</div>
                 <div class="res-box">Общий процент отходов<span id="r-waste">0.0</span> %</div>
             </div>
+            <h3>2D-план клети (сруба) с осями и размерами:</h3>
+            <div id="floor-plan-container" style="margin-bottom: 30px;"></div>
             <h3>2D-Развертка стен, осей чаш и коньковых слег:</h3>
             <div id="walls-preview-container" style="margin-bottom: 30px;"></div>
             <h3>Карта линейного раскроя бруса:</h3>
