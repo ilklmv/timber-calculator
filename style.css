@@ -24,6 +24,8 @@ button:active { transform: scale(0.98); }
 .wall { border: 1px solid var(--border); padding: 25px; border-radius: var(--radius-lg); margin-top: 20px; }
 .axis-block.purlin { border: 1px solid #99f6e4; background: #f0fdfa; padding: 25px; border-radius: var(--radius-lg); margin-top: 20px; }
 .axis-block.purlin .wall-title { color: #0f766e; }
+.axis-row.row { background: var(--bg-input); padding: 12px 14px; border-radius: var(--radius); margin-bottom: 10px; }
+#floor-plan-container svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
 .wall-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .wall-title { font-size: 18px; }
 .openings-section { margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border); }
@@ -54,7 +56,7 @@ button:active { transform: scale(0.98); }
     @page { size: A4 landscape; margin: 15mm; }
     body { background: white; color: black; }
     .box { box-shadow: none; padding: 0; }
-    h1, h2, #add-w-btn, #add-p-btn, .axis-block, .btn-green, .pdf-header, .openings-section, .row { display: none !important; }
+    h1, h2, #add-w-btn, #add-p-btn, #add-axis-btn, .axis-block, .btn-green, .pdf-header, .openings-section, .row { display: none !important; }
     .res { display: block !important; border: none; padding: 0; }
     .pdf-only-title { display: block !important; font-size: 22px; font-weight: 800; border-bottom: 2px solid black; padding-bottom: 8px; text-transform: uppercase; }
     .wall-canvas-container { background: white !important; border: 2px solid black !important; }
